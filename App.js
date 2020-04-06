@@ -6,6 +6,7 @@ import TimePicker from 'react-native-simple-time-picker';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 const momentDurationFormatSetup = require("moment-duration-format");
+import PushNotificationIOS from "@react-native-community/push-notification-ios";
 
 const Stack = createStackNavigator();
 
@@ -13,6 +14,10 @@ function Home({ navigation }) {
   const [title, setTitle] = useState('');
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
+
+  PushNotificationIOS.addEventListener('localNotification', () => {
+    console.log('notification received');
+  });
 
   getBlocks = async() => {
     try {
@@ -64,6 +69,22 @@ function Home({ navigation }) {
             getBlocks();
           }}
         />
+        <Button
+          title="push notification"
+          onPress={() => {
+            const details = {
+              alertBody: 'Testing',
+              alertTitle: 'Sample'
+            }
+            PushNotificationIOS.presentLocalNotification(details);
+          }}
+        />
+        <Button
+          title="request permission"
+          onPress={() => {
+            PushNotificationIOS.requestPermissions();
+          }}
+        />
       </View>
     </View>
   )
@@ -76,7 +97,8 @@ function Timer({ route, navigation }) {
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || secondsLeft === 0) return;
+
     const timer = setTimeout(() => {
       setSecondsLeft(secondsLeft - 1);
     }, 1000);
