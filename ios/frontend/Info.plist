@@ -51,8 +51,6 @@
 	<string>Allow frontend to use your location</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Allow frontend to access your microphone</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-    <string>Allow frontend to access your recognition</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Allow frontend to access your device's accelerometer</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -61,6 +59,8 @@
 	<string>Give frontend periences permission to access your photos</string>
 	<key>NSRemindersUsageDescription</key>
 	<string>Allow frontend to access your reminders</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Allow frontend to access your recognition</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
