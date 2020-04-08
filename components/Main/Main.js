@@ -4,7 +4,7 @@ import TimePicker from 'react-native-simple-time-picker';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import Voice from '@react-native-community/voice';
-// const { NerManager } = require('node-nlp-rn');
+const { NerManager } = require('node-nlp-rn');
 
 export default function Main({ navigation }) {
   const [title, setTitle] = useState('');
@@ -39,15 +39,15 @@ export default function Main({ navigation }) {
     }
   }, [text, isDictating]);
 
-  // function extractFromText(text){
-  //   console.log('extracting...');
-  //   const manager = new NerManager({ threshold: 0.8 });
-  //   const onEntity = manager.addNamedEntity('onEntity', 'trim');
-  //   onEntity.addBetweenCondition('en', 'on', 'for');
-  //   onEntity.addAfterLastCondition('en', 'for');
-  //   manager.findEntities(text, 'en')
-  //   .then(entities => console.log(entities));
-  // }
+  function extractFromText(text){
+    console.log('extracting...');
+    const manager = new NerManager({ threshold: 0.8 });
+    const onEntity = manager.addNamedEntity('onEntity', 'trim');
+    onEntity.addBetweenCondition('en', 'on', 'for');
+    onEntity.addAfterLastCondition('en', 'for');
+    manager.findEntities(text, 'en')
+    .then(entities => console.log(entities));
+  }
 
   function onSpeechStart(e) {
     console.log('onSpeechStart', e);
@@ -166,7 +166,7 @@ export default function Main({ navigation }) {
         <Button
           title="console extract"
           onPress={() => {
-            extractFromText('Focus on swimming for 1 hour');
+            extractFromText(text);
           }}
         />
       </View>
