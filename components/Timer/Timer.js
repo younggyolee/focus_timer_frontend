@@ -30,14 +30,11 @@ export default function Timer({ route, navigation }) {
       }
       PushNotificationIOS.scheduleLocalNotification(details);
 
-      // I can add other notifications, like '1 hour remaining', or '10 minutes remaning',
-      // or '1 hour passed' etc.
       console.log('newEndTime set, and also new notification set, also new setTimeout set');
     }
   }, [status]);
 
   useEffect(() => {
-    // console.log('timer run', secondsLeft);
     if (!endTime || status !== 'ACTIVE') return;
 
     if (secondsLeft > 0) {
@@ -69,7 +66,7 @@ export default function Timer({ route, navigation }) {
   storeBlock = async() => {
     const block = {
       title,
-      duration: secondsTotal - secondsLeft, // use moment js duration here
+      duration: secondsTotal - secondsLeft,
       created_at: new Date().toISOString()
     }
 
@@ -88,7 +85,7 @@ export default function Timer({ route, navigation }) {
 
     try {
       await AsyncStorage.setItem('blocks', JSON.stringify(blocks));
-      console.log('Data stored!\n');
+      console.log('Data stored!');
     } catch (e) {
       console.error('Error while storing data\n', e);
     }

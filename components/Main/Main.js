@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Button, Switch, Text, Vibration } from 'react-native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { StyleSheet, TextInput, View, Button, Vibration, ScrollView, Text } from 'react-native';
 import TimePicker from 'react-native-simple-time-picker';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
@@ -10,34 +9,69 @@ export default function Main({ navigation }) {
   const [title, setTitle] = useState('');
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
-
-  PushNotificationIOS.addEventListener('register', () => {
-    console.log('remote notifcattion received');
-  });
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(0);
+  const [commandText, setCommandText] = useState('');
 
   useEffect(() => {
     Voice.onSpeechStart = onSpeechStart;
-    Voice.onSpeechEnd = onSpeechEnd;
     Voice.onSpeechRecognized = onSpeechRecognized;
+    Voice.onSpeechEnd = onSpeechEnd;
+    Voice.onSpeechError = onSpeechError;
     Voice.onSpeechResults = onSpeechResults;
+    // Voice.onSpeechPartialResults = onSpeechPartialResults;
+    Voice.start();
+    console.log('Voice recognition started');
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsUserSpeaking(false);
+      console.log('STOP LISTENING');
+    }, 3000);
+    
+    return function cleanUp() {
+      clearTimeout(timer);
+      // console.log('cleanup');
+    }
+  }, [title]);
 
   function onSpeechStart(e) {
     console.log('onSpeechStart', e);
+  }
+
+  function onSpeechRecognized(e) {
+    console.log('onSpeechRecognized: ', e);
   }
 
   function onSpeechEnd(e) {
     console.log('onSpeechEnd: ', e);
   }
 
-  function onSpeechRecognized(e) {
-    console.log('onSpeechRecognized', e);
+  function onSpeechError(e) {
+    console.log('onSpeechError: ', e);
   }
 
   function onSpeechResults(e) {
+    const triggerWord = 'hi timer';
     console.log('onSpeechResults: ', e);
     setTitle(e.value[0]);
+    
+    if (!isUserSpeaking && e.value[0].includes(triggerWord)) {
+      console.log('trigger word detected!');
+      setStart(e.value[0].indexOf(triggerWord));
+      setIsUserSpeaking(true);
+    }
+    if (isUserSpeaking) {
+      setEnd(e.value[0].length);
+    }
+    setCommandText(e.value[0].slice(start, end));
   }
+
+  // function onSpeechPartialResults(e) {
+  //   console.log('onSpeechPartialResults: ', e);
+  // }
 
   getBlocks = async() => {
     try {
@@ -49,7 +83,7 @@ export default function Main({ navigation }) {
   }
 
   return(
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View>
         <TextInput
           style={styles.titleInput}
@@ -57,6 +91,9 @@ export default function Main({ navigation }) {
           value={title}
           onChangeText={text => setTitle(text)}
         />
+        <Text>
+          {commandText}
+        </Text>
       </View>
       <View>
         
@@ -77,6 +114,7 @@ export default function Main({ navigation }) {
         <Button
           title="Start"
           onPress={() => {
+            Voice.stop();
             Voice.destroy().then(Voice.removeAllListeners);
             navigation.navigate("Timer", {
               title,
@@ -129,13 +167,13 @@ export default function Main({ navigation }) {
           }}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 200,
+    marginTop: 100,
     fontSize: 20,
     marginLeft: 'auto',
     marginRight: 'auto'
