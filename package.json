@@ -19,6 +19,7 @@
     "expo-updates": "~0.1.0",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
+    "node-nlp-rn": "^3.5.2",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
     "react-native": "~0.61.4",

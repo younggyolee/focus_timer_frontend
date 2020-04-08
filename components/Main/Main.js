@@ -4,15 +4,16 @@ import TimePicker from 'react-native-simple-time-picker';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import Voice from '@react-native-community/voice';
+// const { NerManager } = require('node-nlp-rn');
 
 export default function Main({ navigation }) {
   const [title, setTitle] = useState('');
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
-  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const [isDictating, setIsDictating] = useState(false);
   const [start, setStart] = useState(0);
   const [end, setEnd] = useState(0);
-  const [commandText, setCommandText] = useState('');
+  const [text, setText] = useState('');
 
   useEffect(() => {
     Voice.onSpeechStart = onSpeechStart;
@@ -20,22 +21,33 @@ export default function Main({ navigation }) {
     Voice.onSpeechEnd = onSpeechEnd;
     Voice.onSpeechError = onSpeechError;
     Voice.onSpeechResults = onSpeechResults;
-    // Voice.onSpeechPartialResults = onSpeechPartialResults;
-    Voice.start();
-    console.log('Voice recognition started');
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsUserSpeaking(false);
-      console.log('STOP LISTENING');
-    }, 3000);
-    
-    return function cleanUp() {
-      clearTimeout(timer);
-      // console.log('cleanup');
+    if (isDictating) {
+      console.log('isDictating', isDictating);
+
+      const timer = setTimeout(async() => {
+        console.log('STOP LISTENING');
+        await Voice.stop();
+        setIsDictating(false);
+      }, 3000);
+
+      return function cleanUp() {
+        clearTimeout(timer);
+      }
     }
-  }, [title]);
+  }, [text, isDictating]);
+
+  // function extractFromText(text){
+  //   console.log('extracting...');
+  //   const manager = new NerManager({ threshold: 0.8 });
+  //   const onEntity = manager.addNamedEntity('onEntity', 'trim');
+  //   onEntity.addBetweenCondition('en', 'on', 'for');
+  //   onEntity.addAfterLastCondition('en', 'for');
+  //   manager.findEntities(text, 'en')
+  //   .then(entities => console.log(entities));
+  // }
 
   function onSpeechStart(e) {
     console.log('onSpeechStart', e);
@@ -54,31 +66,16 @@ export default function Main({ navigation }) {
   }
 
   function onSpeechResults(e) {
-    const triggerWord = 'hi timer';
     console.log('onSpeechResults: ', e);
-    setTitle(e.value[0]);
-    
-    if (!isUserSpeaking && e.value[0].includes(triggerWord)) {
-      console.log('trigger word detected!');
-      setStart(e.value[0].indexOf(triggerWord));
-      setIsUserSpeaking(true);
-    }
-    if (isUserSpeaking) {
-      setEnd(e.value[0].length);
-    }
-    setCommandText(e.value[0].slice(start, end));
+    setText(e.value[0]);
   }
-
-  // function onSpeechPartialResults(e) {
-  //   console.log('onSpeechPartialResults: ', e);
-  // }
 
   getBlocks = async() => {
     try {
       const blocks = await AsyncStorage.getItem('blocks');
       console.log(blocks);
     } catch(e) {
-      console.error('Error while getting data \n', e);
+      console.error('Error while getting data', e);
     }
   }
 
@@ -91,9 +88,6 @@ export default function Main({ navigation }) {
           value={title}
           onChangeText={text => setTitle(text)}
         />
-        <Text>
-          {commandText}
-        </Text>
       </View>
       <View>
         
@@ -114,8 +108,6 @@ export default function Main({ navigation }) {
         <Button
           title="Start"
           onPress={() => {
-            Voice.stop();
-            Voice.destroy().then(Voice.removeAllListeners);
             navigation.navigate("Timer", {
               title,
               hours,
@@ -128,12 +120,17 @@ export default function Main({ navigation }) {
       <View>
         <Button
           title="Start recording"
-          onPress={async () => await Voice.start('en-us')}
+          onPress={async () => {
+            await Voice.start('en-us')
+            setIsDictating(true);
+          }}
         />
-        <Button
-          title="Stop recording"
-          onPress={async () => await Voice.stop()}
-        />
+        <Text>
+          {isDictating ? 'Speaking...' : ''}
+        </Text>
+        <Text>
+          {text}
+        </Text>
       </View>
       
       <View>
@@ -164,6 +161,12 @@ export default function Main({ navigation }) {
           title="vibrate"
           onPress={() => {
             Vibration.vibrate();
+          }}
+        />
+        <Button
+          title="console extract"
+          onPress={() => {
+            extractFromText('Focus on swimming for 1 hour');
           }}
         />
       </View>
