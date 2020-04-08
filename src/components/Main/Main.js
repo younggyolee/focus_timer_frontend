@@ -4,16 +4,30 @@ import TimePicker from 'react-native-simple-time-picker';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import Voice from '@react-native-community/voice';
-const { NerManager } = require('node-nlp-rn');
+import processTextToCommand from '../../utils/nlp';
+import { NativeModules } from 'react-native'
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function Main({ navigation }) {
   const [title, setTitle] = useState('');
   const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
+  const [minutes, setMinutes] = useState(1);
   const [isDictating, setIsDictating] = useState(false);
-  const [start, setStart] = useState(0);
-  const [end, setEnd] = useState(0);
   const [text, setText] = useState('');
+  const [locale, setLocale] = useState('');
+  const [initialized, setIntialized] = useState(false);
+
+  useEffect(() => {
+    setIntialized(true);
+    setHours(0);
+    setMinutes(0);
+    setTimeout(() => {
+      setHours(1);
+      setMinutes(0);
+    });
+    // console.log('init');
+    // console.log(date.getHours(), date.getMinutes());
+  }, []);
 
   useEffect(() => {
     Voice.onSpeechStart = onSpeechStart;
@@ -21,6 +35,8 @@ export default function Main({ navigation }) {
     Voice.onSpeechEnd = onSpeechEnd;
     Voice.onSpeechError = onSpeechError;
     Voice.onSpeechResults = onSpeechResults;
+    const locale = NativeModules.SettingsManager.settings.AppleLanguages // "fr_FR"
+    setLocale(locale[0]);
   }, []);
 
   useEffect(() => {
@@ -39,15 +55,7 @@ export default function Main({ navigation }) {
     }
   }, [text, isDictating]);
 
-  function extractFromText(text){
-    console.log('extracting...');
-    const manager = new NerManager({ threshold: 0.8 });
-    const onEntity = manager.addNamedEntity('onEntity', 'trim');
-    onEntity.addBetweenCondition('en', 'on', 'for');
-    onEntity.addAfterLastCondition('en', 'for');
-    manager.findEntities(text, 'en')
-    .then(entities => console.log(entities));
-  }
+  
 
   function onSpeechStart(e) {
     console.log('onSpeechStart', e);
@@ -93,7 +101,17 @@ export default function Main({ navigation }) {
         
       </View>
       <View style={styles.durationContainer}>
-        <TimePicker
+        <DateTimePicker
+          value={initialized ? new Date(2020, 1, 1, hours, minutes, 0) : new Date(2020, 1, 1, hours, minutes, 1)}
+          mode='countdown'
+          onChange={(event, selectedDate) => {
+            // setDate(selectedDate);
+            console.log('changed', hours, minutes, initialized);
+            setHours(selectedDate.getHours());
+            setMinutes(selectedDate.getMinutes());
+          }}
+        />
+        {/* <TimePicker
           selectedHours={hours}
           selectedMinutes={minutes}
           hoursUnit=' hours'
@@ -102,7 +120,7 @@ export default function Main({ navigation }) {
             setHours(hours);
             setMinutes(minutes);
           }}
-        />
+        /> */}
       </View>
       <View>
         <Button
@@ -121,7 +139,7 @@ export default function Main({ navigation }) {
         <Button
           title="Start recording"
           onPress={async () => {
-            await Voice.start('en-us')
+            await Voice.start(locale);
             setIsDictating(true);
           }}
         />
@@ -165,8 +183,29 @@ export default function Main({ navigation }) {
         />
         <Button
           title="console extract"
+          onPress={async() => {
+            const response = await processTextToCommand(text);
+            if (response.result === 'ok') {
+              console.log('ok', response);
+              const totalMinutes = Number(response.duration);
+              console.log(totalMinutes, totalMinutes / 60);
+              const hrs = Math.floor(totalMinutes / 3600);
+              const mins = totalMinutes - (hrs * 3600);
+
+              console.log(hrs, mins);
+              setTitle(response.title);
+              setHours(hrs);
+              setMinutes(mins);
+            } else {
+              console.log('could not process text');
+            }
+          }}
+        />
+        <Button
+          title='settime'
           onPress={() => {
-            extractFromText(text);
+              setHours(3);
+              setMinutes(10);
           }}
         />
       </View>
@@ -188,7 +227,7 @@ const styles = StyleSheet.create({
     fontSize: 20
   },
   durationContainer: {
-    alignItems: 'center',
+    // alignItems: 'center',
     width: 300
   },
   dateTimePicker: {
