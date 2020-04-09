@@ -7,26 +7,71 @@ import Voice from '@react-native-community/voice';
 import processTextToCommand from '../../utils/nlp';
 import { NativeModules } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Tts from 'react-native-tts';
+import * as Calendar from 'expo-calendar';
+
+const STATUS_TYPES = {
+  INITIALIZED: 'INITIALIZED',
+  WAITING: 'WAITING',
+  DICTATING: 'DICTATING',
+  COMMAND_PROCESSED: 'COMMAND_PROCESSED',
+  STARTING_TIMER: 'STARTING_TIMER'
+}
 
 export default function Main({ navigation }) {
   const [title, setTitle] = useState('');
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(1);
-  const [isDictating, setIsDictating] = useState(false);
   const [text, setText] = useState('');
   const [locale, setLocale] = useState('');
-  const [initialized, setIntialized] = useState(false);
+  const [status, setStatus] = useState(STATUS_TYPES.WAITING);
+  const [calendarId, setCalendarId] = useState('');
 
   useEffect(() => {
-    setIntialized(true);
+    (async () => {
+      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      if (status === 'granted') {
+        const calendars = await Calendar.getCalendarsAsync();
+        console.log('Here are all your calendars:');
+        // console.log({ calendars });
+        console.log(JSON.stringify(calendars, null, '\t'));
+        setCalendarId(calendars[0].id);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    console.log(status, hours, minutes, title);
+    if (status === STATUS_TYPES.COMMAND_PROCESSED && title) {
+      console.log('tts');
+      const hoursText = hours ? `${hours} hours` : '';
+      const minutesText = minutes ? `${minutes} minutes` : '';
+      const andText = hoursText && minutesText ? 'and' : '';
+      const message = `Starting ${title} for ${hoursText} ${andText} ${minutesText}`;
+      // read out the command
+      // const voiceId;
+      // Tts.voices().then(voices => voices.forEach(voice => {
+      // }));
+      setStatus(STATUS_TYPES.PREPARING_TO_START);
+      
+      Tts.speak(message);
+      // move to timer after the speaking is ending
+      navigation.navigate("Timer", {
+        title,
+        hours,
+        minutes
+      });
+    }
+  }, [status, hours, minutes, title])
+
+  useEffect(() => {
+    // to counter a bug of SWIFT datetimepicker API
     setHours(0);
     setMinutes(0);
     setTimeout(() => {
       setHours(1);
       setMinutes(0);
     });
-    // console.log('init');
-    // console.log(date.getHours(), date.getMinutes());
   }, []);
 
   useEffect(() => {
@@ -35,27 +80,53 @@ export default function Main({ navigation }) {
     Voice.onSpeechEnd = onSpeechEnd;
     Voice.onSpeechError = onSpeechError;
     Voice.onSpeechResults = onSpeechResults;
-    const locale = NativeModules.SettingsManager.settings.AppleLanguages // "fr_FR"
+    const locale = NativeModules.SettingsManager.settings.AppleLanguages
     setLocale(locale[0]);
+
+    Tts.addEventListener('tts-start', (event) => {
+      console.log("start", event);
+    });
+    Tts.addEventListener('tts-finish', (event) => {
+      console.log("finish", event);
+    });
+    Tts.addEventListener('tts-cancel', (event) => {
+      console.log("cancel", event)
+    });
+    return function cleanup() {
+      Voice.removeAllListeners();
+      Tts.removeEventListener('tts-start');
+      Tts.removeEventListener('tts-finish');
+      Tts.removeEventListener('tts-cancel');
+    }
   }, []);
 
   useEffect(() => {
-    if (isDictating) {
-      console.log('isDictating', isDictating);
-
+    if (status === STATUS_TYPES.DICTATING) {
       const timer = setTimeout(async() => {
         console.log('STOP LISTENING');
+
         await Voice.stop();
-        setIsDictating(false);
-      }, 3000);
+        const response = await processTextToCommand(text, locale);
+          if (response.duration || response.title) {
+            console.log('ok', response);
+            const totalSeconds = Number(response.duration);
+            const hrs = Math.floor(totalSeconds / 3600);
+            const mins = (totalSeconds - (hrs * 3600)) / 60;
+
+            setTitle(response.title);
+            setHours(hrs);
+            setMinutes(mins);
+            setStatus(STATUS_TYPES.COMMAND_PROCESSED);
+          } else {            
+            console.log('could not process text');
+          }
+      }, 2000);
 
       return function cleanUp() {
         clearTimeout(timer);
       }
     }
-  }, [text, isDictating]);
-
-  
+  }, [text, status]);
 
   function onSpeechStart(e) {
     console.log('onSpeechStart', e);
@@ -102,25 +173,14 @@ export default function Main({ navigation }) {
       </View>
       <View style={styles.durationContainer}>
         <DateTimePicker
-          value={initialized ? new Date(2020, 1, 1, hours, minutes, 0) : new Date(2020, 1, 1, hours, minutes, 1)}
+          value={new Date(2020, 1, 1, hours, minutes, 0)}
           mode='countdown'
           onChange={(event, selectedDate) => {
-            // setDate(selectedDate);
-            console.log('changed', hours, minutes, initialized);
             setHours(selectedDate.getHours());
             setMinutes(selectedDate.getMinutes());
           }}
+          textColor='#000000'
         />
-        {/* <TimePicker
-          selectedHours={hours}
-          selectedMinutes={minutes}
-          hoursUnit=' hours'
-          minutesUnit=' min'
-          onChange={(hours, minutes) => {
-            setHours(hours);
-            setMinutes(minutes);
-          }}
-        /> */}
       </View>
       <View>
         <Button
@@ -140,11 +200,13 @@ export default function Main({ navigation }) {
           title="Start recording"
           onPress={async () => {
             await Voice.start(locale);
-            setIsDictating(true);
+            setStatus(STATUS_TYPES.DICTATING);
+            // setIsDictating(true);
           }}
         />
         <Text>
-          {isDictating ? 'Speaking...' : ''}
+          {status === STATUS_TYPES.DICTATING ? 'Speaking...' : ''}
+          {/* {isDictating ? 'Speaking...' : ''} */}
         </Text>
         <Text>
           {text}
@@ -202,10 +264,30 @@ export default function Main({ navigation }) {
           }}
         />
         <Button
-          title='settime'
-          onPress={() => {
-              setHours(3);
-              setMinutes(10);
+          title='tts'
+          
+          onPress={async() => {
+            // const voiceId;
+            Tts.voices().then(voices => voices.forEach(voice => {
+              
+            }));
+            Tts.speak('안녕하세요!', { iosVoiceId: 'com.apple.ttsbundle.Yuna-compact' });
+          }
+        }
+        />
+        <Button
+          title='create calendar event'
+          onPress={async() => {
+            const details = {
+              title: 'Sample event',
+              startDate: new Date(),
+              endDate: new Date().setHours(new Date().getHours() + 1)
+            }
+            const eventId = await Calendar.createEventAsync(
+              calendarId,
+              details
+            );
+            console.log('eventId', eventId);
           }}
         />
       </View>
@@ -215,13 +297,12 @@ export default function Main({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 100,
     fontSize: 20,
     marginLeft: 'auto',
     marginRight: 'auto'
   },
   titleInput: {
-    margin: 10,
+    margin: 50,
     padding: 10,
     textAlign: 'center',
     fontSize: 20
