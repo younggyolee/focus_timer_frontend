@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Button, Text, Vibration } from 'react-native';
+import { View, Button, Text, Vibration } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 const momentDurationFormatSetup = require("moment-duration-format");
@@ -27,6 +27,7 @@ export default function Timer({ route, navigation }) {
   const [endTime, setEndTime] = useState(0);
   const [isKeptAwake, setIsKeptAwake] = useState(false);
   const [calendarEventId, setCalendarEventId] = useState('');
+  const [storageEventId, setStorageEventId] = useState('');
 
   useEffect(() => {
     (async function() {
@@ -37,6 +38,9 @@ export default function Timer({ route, navigation }) {
       let isCalendarEnabled;
       let calendarSettings;
       let calendarId;
+      const today = getIsoDate(new Date().valueOf());
+      let events = JSON.parse(await AsyncStorage.getItem('events'));
+      let todayEvents = (events && events[today]) ? events[today]: [];
 
       if (isCalendarPermitted) {
         calendarSettings = await AsyncStorage.getItem('calendar_settings');
@@ -64,7 +68,7 @@ export default function Timer({ route, navigation }) {
       if (status === STATUS_TYPES.ACTIVE) {
         const newEndTime = new Date().valueOf() + (secondsLeft * 1000);
         setEndTime(newEndTime);
-        const startTime = new Date();
+        const startTime = new Date().valueOf();
 
         // schedule a notification
         PushNotificationIOS.scheduleLocalNotification({
@@ -76,15 +80,13 @@ export default function Timer({ route, navigation }) {
         });
 
         // saves the event to device storage
-        const today = getIsoDate(new Date().valueOf());
-        let events = JSON.parse(await AsyncStorage.getItem('events'));
-        const todayEvents = (events && events[today]) ? events[today]: [];
+        const eventId = uuidv4();
         const event = {
-          id: uuidv4(),
+          id: eventId,
           title,
           tags,
-          start_date: startTime,
-          end_date: newEndTime
+          start_date: new Date(startTime).toISOString(),
+          end_date: new Date(newEndTime).toISOString()
         };
         todayEvents.push(event);
         try {
@@ -92,6 +94,7 @@ export default function Timer({ route, navigation }) {
             'events',
             JSON.stringify({[today]: todayEvents})
           );
+          setStorageEventId(eventId);
         } catch (err) {
           console.error('Error while storing event\n', err);
         }
@@ -115,7 +118,24 @@ export default function Timer({ route, navigation }) {
             endDate: new Date()
           });
         }
-      }  
+
+        // update event in storage
+        // search for the event
+        todayEvents.forEach(event => {
+          if (event.id === storageEventId) {
+            event.end_date = new Date().toISOString();
+          }
+        });
+        console.log('todayEvents', todayEvents);
+        try {
+          await AsyncStorage.mergeItem(
+            'events',
+            JSON.stringify({[today]: todayEvents})
+          );
+        } catch (err) {
+          console.error('Error while updating end_date of a storage event\n', err);
+        }
+      }
     })();
   }, [status]);
 
