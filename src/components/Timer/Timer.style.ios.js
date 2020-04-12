@@ -9,6 +9,6 @@ export default  StyleSheet.create({
   buttonsContainer: {
     alignItems: 'center',
     width: 100,
-    backgroundColor: 'grey'
+    // backgroundColor: 'grey'
   }
 });

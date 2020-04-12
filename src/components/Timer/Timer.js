@@ -8,6 +8,9 @@ import { activateKeepAwake, deactivateKeepAwake } from 'expo-keep-awake';
 import styles from './Timer.style.ios.js';
 import * as Calendar from 'expo-calendar';
 import { createCalendarAsync } from '../../utils/calendar';
+import { getIsoDate } from '../../utils/dates';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
 
 const STATUS_TYPES = {
   ACTIVE: 'ACTIVE',
@@ -17,14 +20,13 @@ const STATUS_TYPES = {
 
 export default function Timer({ route, navigation }) {
   const { title } = route.params;
+  const { tags } = route.params;
   const secondsTotal = 3600 * route.params.hours + 60 * route.params.minutes;
   const [secondsLeft, setSecondsLeft] = useState(secondsTotal);
   const [status, setStatus] = useState(STATUS_TYPES.ACTIVE);
   const [endTime, setEndTime] = useState(0);
   const [isKeptAwake, setIsKeptAwake] = useState(false);
   const [calendarEventId, setCalendarEventId] = useState('');
-  // const [isCalendarPermitted, setIsCalendarPermitted] = useState(false);
-  // const [isCalendarEnabled, setIsCalendarEnabled] = useState(false);
 
   useEffect(() => {
     (async function() {
@@ -35,13 +37,11 @@ export default function Timer({ route, navigation }) {
       let isCalendarEnabled;
       let calendarSettings;
       let calendarId;
-      // setIsCalendarPermitted(calendarPermission.granted);
 
       if (isCalendarPermitted) {
         calendarSettings = await AsyncStorage.getItem('calendar_settings');
         calendarSettings = JSON.parse(calendarSettings);
         calendarId = calendarSettings.calendar_id;
-        // setIsCalendarEnabled(calendarSettings.is_calendar_enabled);
         isCalendarEnabled = calendarSettings.is_calendar_enabled;
         
         //check if calendar exists, and re-create one if it doesn't in calendar
@@ -60,10 +60,11 @@ export default function Timer({ route, navigation }) {
         }
       }
 
-      // When the timer is started or resumed
+      // When the timer started or resumed
       if (status === STATUS_TYPES.ACTIVE) {
         const newEndTime = new Date().valueOf() + (secondsLeft * 1000);
         setEndTime(newEndTime);
+        const startTime = new Date();
 
         // schedule a notification
         PushNotificationIOS.scheduleLocalNotification({
@@ -74,15 +75,35 @@ export default function Timer({ route, navigation }) {
           applicationIconBadgeNumber: 0
         });
 
-        console.log('isCalendarPermitted', isCalendarPermitted, 'isCalendarEnabled', isCalendarEnabled, 'calendarId', calendarId);
+        // saves the event to device storage
+        const today = getIsoDate(new Date().valueOf());
+        let events = JSON.parse(await AsyncStorage.getItem('events'));
+        const todayEvents = (events && events[today]) ? events[today]: [];
+        const event = {
+          id: uuidv4(),
+          title,
+          tags,
+          start_date: startTime,
+          end_date: newEndTime
+        };
+        todayEvents.push(event);
+        try {
+          await AsyncStorage.mergeItem(
+            'events',
+            JSON.stringify({[today]: todayEvents})
+          );
+        } catch (err) {
+          console.error('Error while storing event\n', err);
+        }
+
         // create an event on calendar
         if (isCalendarPermitted && isCalendarEnabled && calendarId) {
           const eventId = await Calendar.createEventAsync(calendarSettings.calendar_id, {
-            title: title,
-            startDate: new Date(), 
-            endDate: new Date(new Date().valueOf() + (secondsTotal * 1000))
+            title,
+            startDate: startTime,
+            endDate: newEndTime
           });
-          console.log('calendar event created');
+          // console.log('calendar event created');
           setCalendarEventId(eventId);
         }
       };
@@ -110,7 +131,7 @@ export default function Timer({ route, navigation }) {
           clearTimeout(timer);
         }
       }
-  
+
       if (secondsLeft == 0 && status === STATUS_TYPES.ACTIVE) {
         Vibration.vibrate();
         console.log('VIBRATE!!!');
@@ -118,15 +139,6 @@ export default function Timer({ route, navigation }) {
       }
     }
   }, [secondsLeft, endTime, status]);
-
-  removeBlocks = async() => {
-    try {
-      await AsyncStorage.removeItem('blocks');
-      console.log("Data removed");
-    } catch(e) {
-      console.error('Error while removing data \n', e);
-    }
-  }
 
   storeBlock = async() => {
     const block = {
@@ -145,8 +157,6 @@ export default function Timer({ route, navigation }) {
     } catch(e) {
       console.error('Error while getting data \n', e);
     }
-    
-    // blocks.push(block);
 
     try {
       await AsyncStorage.setItem('blocks', JSON.stringify(blocks));
@@ -202,9 +212,24 @@ export default function Timer({ route, navigation }) {
         }
 
         <Button
-          title="Empty blocks for dev purposes"
-          onPress={() => {
-            removeBlocks();
+          title="Empty events"
+          onPress={async() => {
+            try {
+              await AsyncStorage.removeItem('events');
+              console.log("Data removed");
+            } catch(e) {
+              console.error('Error while removing data \n', e);
+            }        
+          }}
+        />
+        <Button
+          title="console log events"
+          onPress={async() => {
+            try {
+              console.log(await AsyncStorage.getItem('events'));
+            } catch(e) {
+              console.error('error');
+            }        
           }}
         />
       </View>

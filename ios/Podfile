@@ -5,6 +5,7 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 target 'frontend' do
   rnPrefix = "../node_modules/react-native"
+    permissions_path = '../node_modules/react-native-permissions/ios'
 
   # React Native and its dependencies
   pod 'FBLazyVector', :path => "#{rnPrefix}/Libraries/FBLazyVector"
@@ -36,6 +37,7 @@ target 'frontend' do
   pod 'glog', :podspec => "#{rnPrefix}/third-party-podspecs/glog.podspec"
   pod 'Folly', :podspec => "#{rnPrefix}/third-party-podspecs/Folly.podspec"
   pod 'ActionSheetPicker-3.0'
+  pod 'Permission-SpeechRecognition', :path => "#{permissions_path}/SpeechRecognition.podspec"
 
   # Other native modules
 

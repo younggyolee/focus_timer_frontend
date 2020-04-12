@@ -38,7 +38,7 @@ export default function Setting({ navigation }) {
             'Please turn on Calendar Access in iPhone "Settings" to use the calendar syncing feature',
             [
               {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-              {text: 'OK', onPress: () => Linking.openSettings()},
+              {text: 'Settings', onPress: () => Linking.openSettings()},
             ],
             { cancelable: false }
           );

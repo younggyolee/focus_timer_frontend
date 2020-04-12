@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, View, Button, Vibration, ScrollView, Text } from 'react-native';
+import { TextInput, View, Button, Vibration, ScrollView, Text, Alert, Linking } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import Voice from '@react-native-community/voice';
@@ -8,6 +8,7 @@ import { NativeModules } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Tts from 'react-native-tts';
 import styles from './Main.style.ios.js';
+import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 const STATUS_TYPES = {
   WAITING: 'WAITING',
@@ -18,6 +19,7 @@ const STATUS_TYPES = {
 
 export default function Main({ navigation }) {
   const [title, setTitle] = useState('');
+  const [tags, setTags] = useState([]);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(1);
   const [text, setText] = useState('');
@@ -66,7 +68,7 @@ export default function Main({ navigation }) {
       const minutesText = minutes ? `${minutes} minutes` : '';
       const andText = hoursText && minutesText ? 'and' : '';
       const message = `Starting ${title} for ${hoursText} ${andText} ${minutesText}`;
-      // read out the command
+      // select among available voice
       // const voiceId;
       // Tts.voices().then(voices => voices.forEach(voice => {
       // }));
@@ -120,7 +122,7 @@ export default function Main({ navigation }) {
 
         await Voice.stop();
         const response = await processTextToCommand(text, locale);
-          if (response.duration || response.title) {
+          if (response.duration && response.title) {
             console.log('ok', response);
             const totalSeconds = Number(response.duration);
             const hrs = Math.floor(totalSeconds / 3600);
@@ -132,7 +134,7 @@ export default function Main({ navigation }) {
             setStatus(STATUS_TYPES.COMMAND_PROCESSED);
           } else {
             console.log('could not process text');
-            // setStatus(STATUS_TYPES.WAITING);
+            setStatus(STATUS_TYPES.WAITING);
           }
       }, 3000);
 
@@ -208,12 +210,31 @@ export default function Main({ navigation }) {
         <Button
           title="Start recording"
           onPress={async () => {
-            // check microphone audio recognition permission
-            // ask for permission, if it hasn't been requested before
-            // if permission hasn't been granted and request was triggered,
-            // then pop up + Linking.openSettings()
-            await Voice.start(locale);
-            setStatus(STATUS_TYPES.DICTATING);
+            const permission = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
+            switch (permission) {
+              case RESULTS.UNAVAILABLE:
+                console.log(
+                  'This feature is not available on this device'
+                );
+                return;
+              case RESULTS.DENIED:
+              case RESULTS.GRANTED:
+                await Voice.start(locale);
+                setStatus(STATUS_TYPES.DICTATING);
+                return;
+              case RESULTS.BLOCKED:
+                // pop up + link to settings
+                Alert.alert(
+                  'Speech Recognition Access Required',
+                  'Please turn on Access for Speech Recognition in iPhone "Settings" to use the calendar syncing feature',
+                  [
+                    {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                    {text: 'Settings', onPress: () => Linking.openSettings()},
+                  ],
+                  { cancelable: false }
+                );
+                return;
+            }
           }}
         />
         <Text>
@@ -229,16 +250,6 @@ export default function Main({ navigation }) {
           title="console log blocks"
           onPress={() => {
             getBlocks();
-          }}
-        />
-        <Button
-          title="push notification"
-          onPress={() => {
-            PushNotificationIOS.presentLocalNotification({
-              alertBody: 'Testing',
-              alertTitle: 'Sample',
-              sound: 'default'
-            });
           }}
         />
         <Button
