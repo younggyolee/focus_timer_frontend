@@ -29,10 +29,10 @@
     "react-dom": "~16.9.0",
     "react-native": "~0.61.4",
     "react-native-gesture-handler": "^1.6.1",
+    "react-native-permissions": "^2.1.0",
     "react-native-reanimated": "^1.7.1",
     "react-native-safe-area-context": "^0.7.3",
     "react-native-screens": "^2.2.0",
-    "react-native-simple-time-picker": "^0.2.0",
     "react-native-tts": "^3.1.1",
     "react-native-unimodules": "~0.9.0",
     "react-native-web": "~0.11.7"

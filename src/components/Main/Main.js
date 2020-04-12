@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, View, Button, Vibration, ScrollView, Text } from 'react-native';
-import TimePicker from 'react-native-simple-time-picker';
+import { TextInput, View, Button, Vibration, ScrollView, Text } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import Voice from '@react-native-community/voice';
@@ -8,15 +7,14 @@ import processTextToCommand from '../../utils/nlp';
 import { NativeModules } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Tts from 'react-native-tts';
-import * as Calendar from 'expo-calendar';
+import styles from './Main.style.ios.js';
 
 const STATUS_TYPES = {
-  INITIALIZED: 'INITIALIZED',
   WAITING: 'WAITING',
   DICTATING: 'DICTATING',
   COMMAND_PROCESSED: 'COMMAND_PROCESSED',
   STARTING_TIMER: 'STARTING_TIMER'
-}
+};
 
 export default function Main({ navigation }) {
   const [title, setTitle] = useState('');
@@ -25,24 +23,44 @@ export default function Main({ navigation }) {
   const [text, setText] = useState('');
   const [locale, setLocale] = useState('');
   const [status, setStatus] = useState(STATUS_TYPES.WAITING);
-  const [calendarId, setCalendarId] = useState('');
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      if (status === 'granted') {
-        const calendars = await Calendar.getCalendarsAsync();
-        console.log('Here are all your calendars:');
-        // console.log({ calendars });
-        console.log(JSON.stringify(calendars, null, '\t'));
-        setCalendarId(calendars[0].id);
+    // check if it's a first run, and create initial data on asyncstorage
+    (async() => {
+      const hasLaunched = await(AsyncStorage.getItem('has_launched'));
+      if (!hasLaunched) {
+        AsyncStorage.setItem('calendar_settings', JSON.stringify({
+          calendar_id: '',
+          is_calendar_enabled: false,
+          permission_requested: false
+        }));
+        AsyncStorage.setItem('has_launched', 'true');
       }
     })();
   }, []);
 
   useEffect(() => {
+    console.log(status);
+    if (status === STATUS_TYPES.STARTING_TIMER) {
+      PushNotificationIOS.checkPermissions(result => {
+        if (!result.alert || !result.sound) {
+          console.log('asking for permission');
+          PushNotificationIOS.requestPermissions();
+        }
+      });
+  
+      navigation.navigate("Timer", {
+        title,
+        hours,
+        minutes
+      });
+      setStatus(STATUS_TYPES.WAITING);
+    }
+  }, [status]);
+
+  useEffect(() => {
     console.log(status, hours, minutes, title);
-    if (status === STATUS_TYPES.COMMAND_PROCESSED && title) {
+    if (status === STATUS_TYPES.COMMAND_PROCESSED) {
       console.log('tts');
       const hoursText = hours ? `${hours} hours` : '';
       const minutesText = minutes ? `${minutes} minutes` : '';
@@ -52,15 +70,10 @@ export default function Main({ navigation }) {
       // const voiceId;
       // Tts.voices().then(voices => voices.forEach(voice => {
       // }));
-      setStatus(STATUS_TYPES.PREPARING_TO_START);
+      setStatus(STATUS_TYPES.STARTING_TIMER);
       
       Tts.speak(message);
       // move to timer after the speaking is ending
-      navigation.navigate("Timer", {
-        title,
-        hours,
-        minutes
-      });
     }
   }, [status, hours, minutes, title])
 
@@ -117,10 +130,11 @@ export default function Main({ navigation }) {
             setHours(hrs);
             setMinutes(mins);
             setStatus(STATUS_TYPES.COMMAND_PROCESSED);
-          } else {            
+          } else {
             console.log('could not process text');
+            // setStatus(STATUS_TYPES.WAITING);
           }
-      }, 2000);
+      }, 3000);
 
       return function cleanUp() {
         clearTimeout(timer);
@@ -169,7 +183,7 @@ export default function Main({ navigation }) {
         />
       </View>
       <View>
-        
+
       </View>
       <View style={styles.durationContainer}>
         <DateTimePicker
@@ -186,12 +200,7 @@ export default function Main({ navigation }) {
         <Button
           title="Start"
           onPress={() => {
-            navigation.navigate("Timer", {
-              title,
-              hours,
-              minutes
-            });
-            setTitle('');
+            setStatus(STATUS_TYPES.STARTING_TIMER);
           }}
         />
       </View>
@@ -199,20 +208,22 @@ export default function Main({ navigation }) {
         <Button
           title="Start recording"
           onPress={async () => {
+            // check microphone audio recognition permission
+            // ask for permission, if it hasn't been requested before
+            // if permission hasn't been granted and request was triggered,
+            // then pop up + Linking.openSettings()
             await Voice.start(locale);
             setStatus(STATUS_TYPES.DICTATING);
-            // setIsDictating(true);
           }}
         />
         <Text>
           {status === STATUS_TYPES.DICTATING ? 'Speaking...' : ''}
-          {/* {isDictating ? 'Speaking...' : ''} */}
         </Text>
         <Text>
           {text}
         </Text>
       </View>
-      
+
       <View>
         <Button
           title="console log blocks"
@@ -223,18 +234,11 @@ export default function Main({ navigation }) {
         <Button
           title="push notification"
           onPress={() => {
-            const details = {
+            PushNotificationIOS.presentLocalNotification({
               alertBody: 'Testing',
               alertTitle: 'Sample',
               sound: 'default'
-            }
-            PushNotificationIOS.presentLocalNotification(details);
-          }}
-        />
-        <Button
-          title="request permission"
-          onPress={() => {
-            PushNotificationIOS.requestPermissions();
+            });
           }}
         />
         <Button
@@ -264,54 +268,18 @@ export default function Main({ navigation }) {
           }}
         />
         <Button
-          title='tts'
-          
-          onPress={async() => {
-            // const voiceId;
-            Tts.voices().then(voices => voices.forEach(voice => {
-              
-            }));
-            Tts.speak('안녕하세요!', { iosVoiceId: 'com.apple.ttsbundle.Yuna-compact' });
-          }
-        }
+          title='Setting'
+          onPress={() => navigation.navigate('Setting')}
         />
         <Button
-          title='create calendar event'
-          onPress={async() => {
-            const details = {
-              title: 'Sample event',
-              startDate: new Date(),
-              endDate: new Date().setHours(new Date().getHours() + 1)
-            }
-            const eventId = await Calendar.createEventAsync(
-              calendarId,
-              details
-            );
-            console.log('eventId', eventId);
-          }}
+          title='console log calendar_settings'
+          onPress={async() => console.log(await AsyncStorage.getItem('calendar_settings'))}
+        />
+        <Button
+          title='console log status'
+          onPress={() => console.log(status)}
         />
       </View>
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    fontSize: 20,
-    marginLeft: 'auto',
-    marginRight: 'auto'
-  },
-  titleInput: {
-    margin: 50,
-    padding: 10,
-    textAlign: 'center',
-    fontSize: 20
-  },
-  durationContainer: {
-    // alignItems: 'center',
-    width: 300
-  },
-  dateTimePicker: {
-    width: 400
-  }
-});
