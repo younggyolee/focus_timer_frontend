@@ -23,7 +23,7 @@ export default async function processTextToCommand(text, locale) {
     }
     durationIndexes.push(entity.start);
     durationIndexes.push(entity.end);
-    console.log(processedText);
+    // console.log(processedText);
   });
 
   const durationStart = Math.min(...durationIndexes);
@@ -32,7 +32,14 @@ export default async function processTextToCommand(text, locale) {
   if (durationStart && durationEnd) {
     processedText = text.slice(0, durationStart) + text.slice(durationEnd + 1,);
   }
- 
+
+  // // extract tags
+  // for (word in processedText.split(' ')) {
+  //   if ('#' in word) {
+  //     command.tags.push(word);
+  //   }
+  // }
+
   // remove prepositions for English
   console.log(response.locale);
   if (response.locale === 'en') {

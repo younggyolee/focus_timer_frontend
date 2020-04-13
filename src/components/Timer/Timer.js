@@ -19,8 +19,7 @@ const STATUS_TYPES = {
 };
 
 export default function Timer({ route, navigation }) {
-  const { title } = route.params;
-  const { tags } = route.params;
+  const { title, tags } = route.params;
   const secondsTotal = 3600 * route.params.hours + 60 * route.params.minutes;
   const [secondsLeft, setSecondsLeft] = useState(secondsTotal);
   const [status, setStatus] = useState(STATUS_TYPES.ACTIVE);

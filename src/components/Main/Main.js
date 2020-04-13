@@ -42,6 +42,19 @@ export default function Main({ navigation }) {
   }, []);
 
   useEffect(() => {
+    // extract tags from title
+    console.log('extracting tags from title');
+    const extractedTags = [];
+    for (word of title.split(' ')) {
+      console.log(word);
+      if (word.includes('#')) {
+        extractedTags.push(word);
+      }
+    }
+    setTags(extractedTags);
+  }, [title]);
+
+  useEffect(() => {
     console.log(status);
     if (status === STATUS_TYPES.STARTING_TIMER) {
       PushNotificationIOS.checkPermissions(result => {
@@ -50,9 +63,11 @@ export default function Main({ navigation }) {
           PushNotificationIOS.requestPermissions();
         }
       });
-  
+ 
+      console.log('navigating to timer ', title, tags, hours, minutes);
       navigation.navigate("Timer", {
         title,
+        tags,
         hours,
         minutes
       });
@@ -77,7 +92,7 @@ export default function Main({ navigation }) {
       Tts.speak(message);
       // move to timer after the speaking is ending
     }
-  }, [status, hours, minutes, title])
+  }, [status, hours, minutes, title]);
 
   useEffect(() => {
     // to counter a bug of SWIFT datetimepicker API
@@ -129,6 +144,7 @@ export default function Main({ navigation }) {
             const mins = (totalSeconds - (hrs * 3600)) / 60;
 
             setTitle(response.title);
+            setTags(response.tags);
             setHours(hrs);
             setMinutes(mins);
             setStatus(STATUS_TYPES.COMMAND_PROCESSED);
@@ -183,6 +199,9 @@ export default function Main({ navigation }) {
           value={title}
           onChangeText={text => setTitle(text)}
         />
+      </View>
+      <View>
+        <Text>tags: {tags.toString()}</Text>
       </View>
       <View>
 
@@ -283,8 +302,8 @@ export default function Main({ navigation }) {
           onPress={() => navigation.navigate('Setting')}
         />
         <Button
-          title='Stats'
-          onPress={() => navigation.navigate('Stats')}
+          title='StatsList'
+          onPress={() => navigation.navigate('StatsList')}
         />
         <Button
           title='console log calendar_settings'

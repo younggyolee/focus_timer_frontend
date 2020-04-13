@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Main from './components/Main/Main';
 import Timer from './components/Timer/Timer';
 import Setting from './components/Setting/Setting';
-import Stats from './components/Stats/Stats';
+import StatsList from './components/StatsList/StatsList';
 
 const Stack = createStackNavigator();
 
@@ -27,8 +27,8 @@ export default function App() {
           component={Setting}
         />
         <Stack.Screen
-          name='Stats'
-          component={Stats}
+          name='StatsList'
+          component={StatsList}
         />
       </Stack.Navigator>
     </NavigationContainer>
