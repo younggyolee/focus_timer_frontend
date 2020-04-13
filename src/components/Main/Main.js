@@ -283,6 +283,10 @@ export default function Main({ navigation }) {
           onPress={() => navigation.navigate('Setting')}
         />
         <Button
+          title='Stats'
+          onPress={() => navigation.navigate('Stats')}
+        />
+        <Button
           title='console log calendar_settings'
           onPress={async() => console.log(await AsyncStorage.getItem('calendar_settings'))}
         />

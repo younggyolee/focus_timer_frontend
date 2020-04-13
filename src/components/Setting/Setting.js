@@ -6,7 +6,6 @@ import * as Calendar from 'expo-calendar';
 import { createCalendarAsync } from '../../utils/calendar';
 
 export default function Setting({ navigation }) {
-
   const [isCalendarEnabled, setIsCalendarEnabled] = useState(false);
 
   useEffect(() => {
@@ -93,4 +92,4 @@ export default function Setting({ navigation }) {
       />
     </View>
   );
-}
+};
