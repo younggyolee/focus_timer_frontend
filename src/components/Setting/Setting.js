@@ -26,7 +26,7 @@ export default function Setting({ navigation }) {
       const calendarPermission = await Calendar.getCalendarPermissionsAsync()
       if (!(calendarPermission.granted)) {
         const { status } = await Calendar.requestCalendarPermissionsAsync();
-        AsyncStorage.mergeItem('campaign_settings', JSON.stringify({
+        AsyncStorage.mergeItem('calendar_settings', JSON.stringify({
           permission_requested: true
         }));
         if (status !== 'granted') {
@@ -54,7 +54,7 @@ export default function Setting({ navigation }) {
       if (!calendarExists) {
         calendarId = await createCalendarAsync();
         await AsyncStorage.mergeItem(
-          'campaign_settings',
+          'calendar_settings',
           JSON.stringify({calendar_id : calendarId})
         );
       }

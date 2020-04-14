@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, View, Button, Vibration, ScrollView, Text, Alert, Linking } from 'react-native';
+import { TextInput, View, Button, ScrollView, Text, Alert, Linking, SafeAreaView, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import Voice from '@react-native-community/voice';
@@ -9,6 +9,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Tts from 'react-native-tts';
 import styles from './Main.style.ios.js';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { faCog, faChartBar, faPlayCircle, faMicrophone } from '@fortawesome/free-solid-svg-icons'
 
 const STATUS_TYPES = {
   WAITING: 'WAITING',
@@ -27,7 +29,6 @@ export default function Main({ navigation }) {
   const [status, setStatus] = useState(STATUS_TYPES.WAITING);
 
   useEffect(() => {
-    // check if it's a first run, and create initial data on asyncstorage
     (async() => {
       const hasLaunched = await(AsyncStorage.getItem('has_launched'));
       if (!hasLaunched) {
@@ -42,8 +43,6 @@ export default function Main({ navigation }) {
   }, []);
 
   useEffect(() => {
-    // extract tags from title
-    console.log('extracting tags from title');
     const extractedTags = [];
     for (word of title.split(' ')) {
       console.log(word);
@@ -55,7 +54,6 @@ export default function Main({ navigation }) {
   }, [title]);
 
   useEffect(() => {
-    console.log(status);
     if (status === STATUS_TYPES.STARTING_TIMER) {
       PushNotificationIOS.checkPermissions(result => {
         if (!result.alert || !result.sound) {
@@ -64,7 +62,6 @@ export default function Main({ navigation }) {
         }
       });
  
-      console.log('navigating to timer ', title, tags, hours, minutes);
       navigation.navigate("Timer", {
         title,
         tags,
@@ -83,19 +80,15 @@ export default function Main({ navigation }) {
       const minutesText = minutes ? `${minutes} minutes` : '';
       const andText = hoursText && minutesText ? 'and' : '';
       const message = `Starting ${title} for ${hoursText} ${andText} ${minutesText}`;
-      // select among available voice
-      // const voiceId;
-      // Tts.voices().then(voices => voices.forEach(voice => {
-      // }));
       setStatus(STATUS_TYPES.STARTING_TIMER);
       
       Tts.speak(message);
-      // move to timer after the speaking is ending
     }
   }, [status, hours, minutes, title]);
 
+  // trigger two changes at start up,
+  // to deal with change-not-triggering issue presumably from SWIFT API
   useEffect(() => {
-    // to counter a bug of SWIFT datetimepicker API
     setHours(0);
     setMinutes(0);
     setTimeout(() => {
@@ -120,7 +113,7 @@ export default function Main({ navigation }) {
       console.log("finish", event);
     });
     Tts.addEventListener('tts-cancel', (event) => {
-      console.log("cancel", event)
+      console.log("cancel", event);
     });
     return function cleanup() {
       Voice.removeAllListeners();
@@ -132,9 +125,8 @@ export default function Main({ navigation }) {
 
   useEffect(() => {
     if (status === STATUS_TYPES.DICTATING) {
+      
       const timer = setTimeout(async() => {
-        console.log('STOP LISTENING');
-
         await Voice.stop();
         const response = await processTextToCommand(text, locale);
           if (response.duration && response.title) {
@@ -181,139 +173,103 @@ export default function Main({ navigation }) {
     setText(e.value[0]);
   }
 
-  getBlocks = async() => {
-    try {
-      const blocks = await AsyncStorage.getItem('blocks');
-      console.log(blocks);
-    } catch(e) {
-      console.error('Error while getting data', e);
+  async function onRecordingButtonTouch() {
+    const permission = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
+    switch (permission) {
+      case RESULTS.UNAVAILABLE:
+        console.log(
+          'This feature is not available on this device'
+        );
+        return;
+      case RESULTS.DENIED:
+      case RESULTS.GRANTED:
+        await Voice.start(locale);
+        setStatus(STATUS_TYPES.DICTATING);
+        return;
+      case RESULTS.BLOCKED:
+        // pop up + link to settings
+        Alert.alert(
+          'Speech Recognition Access Required',
+          'Please turn on Access for Speech Recognition in iPhone "Settings" to use the calendar syncing feature',
+          [
+            {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+            {text: 'Settings', onPress: () => Linking.openSettings()},
+          ],
+          { cancelable: false }
+        );
+        return;
     }
   }
 
   return(
-    <ScrollView style={styles.container}>
-      <View>
-        <TextInput
-          style={styles.titleInput}
-          placeholder="Type title here"
-          value={title}
-          onChangeText={text => setTitle(text)}
-        />
-      </View>
-      <View>
-        <Text>tags: {tags.toString()}</Text>
-      </View>
-      <View>
+    <SafeAreaView>
+      <ScrollView style={styles.container}>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Setting')}
+          >
+            <FontAwesomeIcon icon={ faCog } size={ 40 }/>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('StatsList')}
+          >
+            <FontAwesomeIcon icon={ faChartBar } size={ 40 }/>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.textInputContainer}>
+          <TextInput
+            style={styles.titleInput}
+            placeholder="Type title here"
+            value={title}
+            onChangeText={text => setTitle(text)}
+          />
+        </View>
+        <View>
+          {tags.map(tag => 
+            <Text style={styles.tagTexts}>{tag}</Text>
+          )}
+        </View>
+        <View>
 
-      </View>
-      <View style={styles.durationContainer}>
-        <DateTimePicker
-          value={new Date(2020, 1, 1, hours, minutes, 0)}
-          mode='countdown'
-          onChange={(event, selectedDate) => {
-            setHours(selectedDate.getHours());
-            setMinutes(selectedDate.getMinutes());
-          }}
-          textColor='#000000'
-        />
-      </View>
-      <View>
-        <Button
-          title="Start"
-          onPress={() => {
-            setStatus(STATUS_TYPES.STARTING_TIMER);
-          }}
-        />
-      </View>
-      <View>
-        <Button
-          title="Start recording"
-          onPress={async () => {
-            const permission = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
-            switch (permission) {
-              case RESULTS.UNAVAILABLE:
-                console.log(
-                  'This feature is not available on this device'
-                );
-                return;
-              case RESULTS.DENIED:
-              case RESULTS.GRANTED:
-                await Voice.start(locale);
-                setStatus(STATUS_TYPES.DICTATING);
-                return;
-              case RESULTS.BLOCKED:
-                // pop up + link to settings
-                Alert.alert(
-                  'Speech Recognition Access Required',
-                  'Please turn on Access for Speech Recognition in iPhone "Settings" to use the calendar syncing feature',
-                  [
-                    {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-                    {text: 'Settings', onPress: () => Linking.openSettings()},
-                  ],
-                  { cancelable: false }
-                );
-                return;
-            }
-          }}
-        />
-        <Text>
-          {status === STATUS_TYPES.DICTATING ? 'Speaking...' : ''}
-        </Text>
-        <Text>
-          {text}
-        </Text>
-      </View>
-
-      <View>
-        <Button
-          title="console log blocks"
-          onPress={() => {
-            getBlocks();
-          }}
-        />
-        <Button
-          title="vibrate"
-          onPress={() => {
-            Vibration.vibrate();
-          }}
-        />
-        <Button
-          title="console extract"
-          onPress={async() => {
-            const response = await processTextToCommand(text);
-            if (response.result === 'ok') {
-              console.log('ok', response);
-              const totalMinutes = Number(response.duration);
-              console.log(totalMinutes, totalMinutes / 60);
-              const hrs = Math.floor(totalMinutes / 3600);
-              const mins = totalMinutes - (hrs * 3600);
-
-              console.log(hrs, mins);
-              setTitle(response.title);
-              setHours(hrs);
-              setMinutes(mins);
-            } else {
-              console.log('could not process text');
-            }
-          }}
-        />
-        <Button
-          title='Setting'
-          onPress={() => navigation.navigate('Setting')}
-        />
-        <Button
-          title='StatsList'
-          onPress={() => navigation.navigate('StatsList')}
-        />
-        <Button
-          title='console log calendar_settings'
-          onPress={async() => console.log(await AsyncStorage.getItem('calendar_settings'))}
-        />
-        <Button
-          title='console log status'
-          onPress={() => console.log(status)}
-        />
-      </View>
-    </ScrollView>
+        </View>
+        <View style={styles.durationContainer}>
+          <DateTimePicker
+            value={new Date(2020, 1, 1, hours, minutes, 0)}
+            mode='countdown'
+            onChange={(event, selectedDate) => {
+              setHours(selectedDate.getHours());
+              setMinutes(selectedDate.getMinutes());
+            }}
+            textColor='#000000'
+          />
+        </View>
+        <View style={styles.mainButtonsContainer}>
+          <TouchableOpacity 
+            onPress={() => {
+              setStatus(STATUS_TYPES.STARTING_TIMER);
+            }}
+          >
+            <FontAwesomeIcon icon={ faPlayCircle } size={ 60 } />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onRecordingButtonTouch}
+          >
+            <FontAwesomeIcon icon={ faMicrophone } size={ 60 } />
+          </TouchableOpacity>
+        </View>
+        <View>
+          <Button
+            title="Start recording"
+            onPress={onRecordingButtonTouch}
+          />
+          <Text>
+            {status === STATUS_TYPES.DICTATING ? 'Speaking...' : ''}
+          </Text>
+          <Text>
+            {text}
+          </Text>
+        </View>
+        </ScrollView>
+    </SafeAreaView>
   );
 };

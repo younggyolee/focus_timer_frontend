@@ -41,6 +41,7 @@ export default function Timer({ route, navigation }) {
       let events = JSON.parse(await AsyncStorage.getItem('events'));
       let todayEvents = (events && events[today]) ? events[today]: [];
 
+
       if (isCalendarPermitted) {
         calendarSettings = await AsyncStorage.getItem('calendar_settings');
         calendarSettings = JSON.parse(calendarSettings);
@@ -56,7 +57,7 @@ export default function Timer({ route, navigation }) {
         if (!calendarExists) {
           calendarId = await createCalendarAsync();
           await AsyncStorage.mergeItem(
-            'campaign_settings',
+            'calendar_settings',
             JSON.stringify({ calendarId })
           );
           console.log('calendar created');
@@ -78,24 +79,61 @@ export default function Timer({ route, navigation }) {
           applicationIconBadgeNumber: 0
         });
 
-        // saves the event to device storage
+        // save the event to device storage
         const eventId = uuidv4();
-        const event = {
-          id: eventId,
-          title,
-          tags,
-          start_date: new Date(startTime).toISOString(),
-          end_date: new Date(newEndTime).toISOString()
-        };
-        todayEvents.push(event);
+        // const event = {
+        //   id: eventId,
+          // title,
+          // tags,
+          // start_date: new Date(startTime).toISOString(),
+          // end_date: new Date(newEndTime).toISOString()
+        // };
+        // todayEvents.push(event);
+        todayEvents.push(eventId);
         try {
           await AsyncStorage.mergeItem(
-            'events',
+            'events_by_date',
             JSON.stringify({[today]: todayEvents})
           );
           setStorageEventId(eventId);
         } catch (err) {
-          console.error('Error while storing event\n', err);
+          console.error('Error while storing events_by_day\n', err);
+        }
+
+        // save the event details by its id separately
+        try {
+          await AsyncStorage.mergeItem(
+            'events',
+            JSON.stringify({
+              [eventId]: {
+                title,
+                tags,
+                start_date: new Date(startTime).toISOString(),
+                end_date: new Date(newEndTime).toISOString()
+              }
+            })
+          );
+        } catch (err) {
+          console.error('Error while storing event into events')
+        }
+
+        // save the event to device storage, categorizing by tag
+        const storedTags = JSON.parse(await AsyncStorage.getItem('tags')) || {};
+
+        for (tag of tags) {
+          if (Object.keys(storedTags).includes(tag)) {
+            storedTags[tag].push(eventId);
+          } else {
+            storedTags[tag] = [eventId];
+          }
+        }
+        try {
+          await AsyncStorage.mergeItem(
+            'events_by_tag',
+            JSON.stringify(storedTags)
+          );
+        } catch (err) {
+          console.error('Error while storing event id to events_by_tag\n', err);
         }
 
         // create an event on calendar
@@ -125,7 +163,7 @@ export default function Timer({ route, navigation }) {
             event.end_date = new Date().toISOString();
           }
         });
-        console.log('todayEvents', todayEvents);
+        // console.log('todayEvents', todayEvents);
         try {
           await AsyncStorage.mergeItem(
             'events',
@@ -242,10 +280,20 @@ export default function Timer({ route, navigation }) {
           }}
         />
         <Button
-          title="console log events"
+          title="console log events by day"
           onPress={async() => {
             try {
-              console.log(await AsyncStorage.getItem('events'));
+              console.log(await AsyncStorage.getItem('events_by_day'));
+            } catch(e) {
+              console.error('error');
+            }        
+          }}
+        />
+        <Button
+          title="console log tags"
+          onPress={async() => {
+            try {
+              console.log(await AsyncStorage.getItem('tags'));
             } catch(e) {
               console.error('error');
             }        

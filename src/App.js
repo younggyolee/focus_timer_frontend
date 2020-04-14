@@ -5,6 +5,7 @@ import Main from './components/Main/Main';
 import Timer from './components/Timer/Timer';
 import Setting from './components/Setting/Setting';
 import StatsList from './components/StatsList/StatsList';
+import StatsPerTag from './components/StatsPerTag/StatsPerTag';
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,10 @@ export default function App() {
         <Stack.Screen
           name='StatsList'
           component={StatsList}
+        />
+        <Stack.Screen
+          name='StatsPerTag'
+          component={StatsPerTag}
         />
       </Stack.Navigator>
     </NavigationContainer>
