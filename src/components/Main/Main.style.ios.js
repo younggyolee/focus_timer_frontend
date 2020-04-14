@@ -1,15 +1,14 @@
 import { StyleSheet } from 'react-native';
 
 export default  StyleSheet.create({
+  container: {
+    fontSize: 20,
+    padding: 30
+  },
   headerContainer:{
     paddingTop: 20,
     flexDirection: 'row',
     justifyContent: 'space-between'
-  },
-  container: {
-    fontSize: 20,
-    marginLeft: 'auto',
-    marginRight: 'auto'
   },
   textInputContainer: {
     width: '100%',
@@ -26,15 +25,22 @@ export default  StyleSheet.create({
     fontSize: 30,
     color: '#E54B4B'
   },
-  durationContainer: {
-    width: 300
+  listeningText: {
+    fontSize: 20
   },
-  dateTimePicker: {
-    width: 400
+  dictatedText: {
+    fontSize: 20,
+    color: 'grey'
+  },
+  durationContainer: {
+    justifyContent: 'center'
   },
   mainButtonsContainer: {
     marginTop: 50,
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-around'
+  },
+  cancelRecordingIcon: {
+    color: 'red'
   }
 });

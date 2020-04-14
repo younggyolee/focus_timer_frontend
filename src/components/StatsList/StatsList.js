@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, Dimensions, Animated, Picker, TouchableOpacity } from 'react-native';
+import { View, Button, Text, Dimensions, Animated, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import styles from './StatsList.style.ios.js';
 import AsyncStorage from '@react-native-community/async-storage';
 import { getDateRange, getIsoDate, addDays } from '../../utils/dates';
 import moment from 'moment';
 const momentDurationFormatSetup = require("moment-duration-format");
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faHome } from '@fortawesome/free-solid-svg-icons';
 
 VIEW_TYPES = {
   MULTI_CATEGORIES: 'MULTI_CATEGORIES',
@@ -16,7 +18,7 @@ export default function StatsList({ navigation }) {
   const [endDate, setEndDate] = useState('2020-04-13');
   const [eventsByTag, setEventsByTag] = useState([]);
   const [eventsByTagMaxDuration, setEventsByTagMaxDuration] = useState(10000);
-  const [selectedDaysNum, setSelectedDaysNum] = useState(7);
+  const [selectedDaysNum, setSelectedDaysNum] = useState(0);
 
   const screenWidth = Dimensions.get("window").width;
   
@@ -28,7 +30,6 @@ export default function StatsList({ navigation }) {
       } catch (err) {
         console.error('Error while getting eventsByDate from AsyncStorage');
       }
-      console.log('eventsByDate', eventsByDate);
 
       // create a date range between startDate and endDate
       const dateRange = getDateRange(startDate, endDate);
@@ -52,9 +53,11 @@ export default function StatsList({ navigation }) {
       }
       console.log('events', events);
       for (date of filteredDates) {
+        console.log('eventsByDateFiltered', JSON.stringify(eventsByDateFiltered, null, '\t'));
         for (eventId of eventsByDateFiltered[date]) {
           const event = events[eventId];
           const duration = (new Date(event.end_date).valueOf() - new Date(event.start_date).valueOf()) / 1000;
+          
           for (tag of event.tags) {
             if (tag in durationByTagObj) {
               durationByTagObj[tag] += duration;
@@ -92,63 +95,102 @@ export default function StatsList({ navigation }) {
     setEndDate(today);
   }, [selectedDaysNum]);
 
+  const bgColors = [
+    'rgb(183, 206, 178)',
+    'rgb(188, 204, 222)',
+    'rgb(211, 135, 131)',
+    'rgb(239, 239, 197)',
+    'rgb(251, 202, 142)',
+    'rgb(235, 230, 133)',
+    'rgb(186, 188, 190)',
+    'rgb(209, 122, 128)'
+  ];
+
 
   return (
-    <View style={styles.container}>
-      <View>
-        <Button
-          title='Main'
-          onPress={() => navigation.navigate('Main')}
-        />
-        <Picker
-          selectedValue={selectedDaysNum}
-          onValueChange={
-            (itemValue, itemIndex) => {
-              console.log(itemValue);
-              setSelectedDaysNum(itemValue);
-            }
-          }
-        >
-          <Picker.Item label='Today' value={1} />
-          <Picker.Item label='Last 7 days' value={7} />
-          <Picker.Item label='Last 30 days' value={30} />
-        </Picker>
-
-        <View>
-          <Text>Tags</Text>
-          {
-            eventsByTag.map((event, index) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => 
-                    navigation.navigate('StatsPerTag', {
-                      tag: event.tag
-                    })
-                  }
-                >
-                <Animated.View
-                  style={[
-                    styles.bar,
-                    styles.points,
-                    { width:
-                      (event.duration / eventsByTagMaxDuration) * screenWidth
-                    }
-                  ]}
-                  key={index}
-                >
-                    <Text>
-                      {event.tag} 
-                      {moment.duration(event.duration, "seconds").format("h:mm:ss", {
-                        trim: false
-                      })}
-                    </Text>
-                  </Animated.View>
-                </TouchableOpacity>
-              );
-            })
-          }
+    <SafeAreaView>
+      <View style={styles.container}>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Main')}
+          >
+            <FontAwesomeIcon icon={ faHome } size={ 50 } />
+          </TouchableOpacity>
         </View>
+        <ScrollView style={styles.contentContainer}>
+          <View style={styles.dateRangeButtonsContainer}>
+            <View style={selectedDaysNum === 0 ? styles.rangeButtonSelected : styles.rangeButton}>
+              <Button
+                title='D'
+                color='black'
+                onPress={()=>setSelectedDaysNum(0)}
+              />
+            </View>
+            <View style={selectedDaysNum === 6 ? styles.rangeButtonSelected : styles.rangeButton}>
+              <Button
+                title='W'
+                color='black'
+                onPress={()=>setSelectedDaysNum(6)}
+              />
+            </View>
+            <View style={selectedDaysNum === 30 ? styles.rangeButtonSelected : styles.rangeButton}>
+              <Button
+                title='M'
+                color='black'
+                onPress={()=>setSelectedDaysNum(30)}
+              />
+            </View>
+            <View style={selectedDaysNum === 365 ? styles.rangeButtonSelected : styles.rangeButton}>
+              <Button
+                title='Y'
+                color='black'
+                onPress={()=>setSelectedDaysNum(365)}
+              />
+             </View>
+          </View>
+          <View style={styles.tagsHeaderContainer}>
+            <Text style={styles.tagsHeaderText}>Tags</Text>
+          </View>
+          <View>
+            <Text style={styles.tagsHeaderDateRangeText}>{moment(startDate).format('MMM DD, YYYY')}-{moment(endDate).format('MMM DD, YYYY')}</Text>
+          </View>
+          <View style={styles.barsContainer}>
+            {
+              eventsByTag.map((event, index) => {
+                return (
+                  <TouchableOpacity
+                    onPress={() => 
+                      navigation.navigate('StatsPerTag', {
+                        tag: event.tag
+                      })
+                    }
+                    key={index}
+                  >
+                    <Animated.View
+                      style={[
+                        styles.bars,
+                        { width: (event.duration / eventsByTagMaxDuration) * screenWidth * 0.8,
+                          backgroundColor: bgColors[index % 8]
+                        }
+                      ]}
+                      key={index}
+                    >
+                      <Text style={styles.barTitleText}>
+                        {event.tag}
+                      </Text>
+                      <Text style={styles.barDurationText}>
+                        {moment.duration(event.duration, "seconds").format("hh:mm:ss", {
+                          trim: false
+                        })}
+                      </Text>
+                    </Animated.View>
+                  </TouchableOpacity>
+                );
+              })
+            }
+          </View>
+        </ScrollView>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };

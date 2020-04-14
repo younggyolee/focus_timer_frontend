@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, Vibration } from 'react-native';
+import { View, Button, Text, Vibration, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 const momentDurationFormatSetup = require("moment-duration-format");
@@ -11,6 +11,9 @@ import { createCalendarAsync } from '../../utils/calendar';
 import { getIsoDate } from '../../utils/dates';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faInfinity, faBell, faPauseCircle, faStopCircle, faStop, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 
 const STATUS_TYPES = {
   ACTIVE: 'ACTIVE',
@@ -39,8 +42,8 @@ export default function Timer({ route, navigation }) {
       let calendarId;
       const today = getIsoDate(new Date().valueOf());
       let events = JSON.parse(await AsyncStorage.getItem('events'));
-      let todayEvents = (events && events[today]) ? events[today]: [];
-
+      const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
+      const todayEvents = eventsByDate[today] || [];
 
       if (isCalendarPermitted) {
         calendarSettings = await AsyncStorage.getItem('calendar_settings');
@@ -81,14 +84,6 @@ export default function Timer({ route, navigation }) {
 
         // save the event to device storage
         const eventId = uuidv4();
-        // const event = {
-        //   id: eventId,
-          // title,
-          // tags,
-          // start_date: new Date(startTime).toISOString(),
-          // end_date: new Date(newEndTime).toISOString()
-        // };
-        // todayEvents.push(event);
         todayEvents.push(eventId);
         try {
           await AsyncStorage.mergeItem(
@@ -118,8 +113,7 @@ export default function Timer({ route, navigation }) {
         }
 
         // save the event to device storage, categorizing by tag
-        const storedTags = JSON.parse(await AsyncStorage.getItem('tags')) || {};
-
+        const storedTags = JSON.parse(await AsyncStorage.getItem('events_by_tag')) || {};
         for (tag of tags) {
           if (Object.keys(storedTags).includes(tag)) {
             storedTags[tag].push(eventId);
@@ -127,6 +121,7 @@ export default function Timer({ route, navigation }) {
             storedTags[tag] = [eventId];
           }
         }
+        console.log('storedTags', storedTags);
         try {
           await AsyncStorage.mergeItem(
             'events_by_tag',
@@ -224,82 +219,82 @@ export default function Timer({ route, navigation }) {
   }
 
   return(
-    <View style={styles.container}>
-      <Button
-        title='Keep Awake'
-        onPress={()=>{
-          console.log('keep awake touched');
-          isKeptAwake ? deactivateKeepAwake() : activateKeepAwake() ;
-          setIsKeptAwake(!isKeptAwake);
-        }}
-        className={isKeptAwake ? 'keep_awake_button_enabled' : 'keep_awake_button_disabled'}
-      />
-      <Text>{title}</Text>
-      <Text>{new Date(endTime).toString()}</Text>
-      <Text>{moment.duration(secondsLeft, "seconds").format("h:mm:ss")}</Text>
-      <View
-        style={styles.buttonsContainer}
+    <SafeAreaView>
+      <View 
+        style={
+          status === STATUS_TYPES.ACTIVE ?
+            styles.containerActive :
+            styles.containerInactive
+        }
       >
-        {
-          (status === STATUS_TYPES.ACTIVE) &&
-          <Button
-            title='Pause'
-            onPress={() => {
-              setStatus(STATUS_TYPES.PAUSED);
+        <View style={styles.headerContainer}>
+          <TouchableOpacity
+            onPress={()=>{
+              isKeptAwake ? deactivateKeepAwake() : activateKeepAwake();
+              setIsKeptAwake(!isKeptAwake);
             }}
-          />
-        }
-        {
-          (status === STATUS_TYPES.PAUSED) &&
-          <Button
-            title='Resume'
-            onPress={() => setStatus(STATUS_TYPES.ACTIVE)}
-          />
-        }
-        {
-          ((status === STATUS_TYPES.PAUSED) || (status === STATUS_TYPES.COMPLETED)) &&
-          <Button
-            title="Cancel"
-            onPress={() => {
-              deactivateKeepAwake();
-              storeBlock();
-              navigation.navigate("Main");
-            }}
-          />
-        }
-
-        <Button
-          title="Empty events"
-          onPress={async() => {
-            try {
-              await AsyncStorage.removeItem('events');
-              console.log("Data removed");
-            } catch(e) {
-              console.error('Error while removing data \n', e);
-            }        
-          }}
-        />
-        <Button
-          title="console log events by day"
-          onPress={async() => {
-            try {
-              console.log(await AsyncStorage.getItem('events_by_day'));
-            } catch(e) {
-              console.error('error');
-            }        
-          }}
-        />
-        <Button
-          title="console log tags"
-          onPress={async() => {
-            try {
-              console.log(await AsyncStorage.getItem('tags'));
-            } catch(e) {
-              console.error('error');
-            }        
-          }}
-        />
+          >
+            <FontAwesomeIcon
+              icon={ faInfinity }
+              size={ 60 }
+              style={
+                isKeptAwake ? styles.keepAwakeIconOn : styles.keepAwakeIconOff
+              }
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.mainInfoContainer}>
+          <Text style={styles.titleText}>
+            {title}
+          </Text>
+          <Text style={styles.timeLeftText}>
+            {moment.duration(secondsLeft, "seconds").format("h:mm:ss")}
+          </Text>
+          <Text style={styles.endTimeText}>
+            <FontAwesomeIcon 
+              icon={ faBell }
+              style={styles.endTimeIcon}
+            />
+            {moment(new Date(endTime).toISOString()).format("A hh:mm")}
+          </Text>
+        </View>
+        <View
+          style={styles.activeButtonContainer}
+        >
+          {
+            (status === STATUS_TYPES.ACTIVE) &&
+            <TouchableOpacity
+              onPress={() => setStatus(STATUS_TYPES.PAUSED)}
+            >
+              <FontAwesomeIcon icon={ faPauseCircle } size={ 80 }/>
+            </TouchableOpacity>
+          }
+          {
+            ((status === STATUS_TYPES.PAUSED) || (status === STATUS_TYPES.COMPLETED)) &&
+            <TouchableOpacity
+              onPress={() => {
+                deactivateKeepAwake();
+                storeBlock();
+                navigation.navigate("Main");
+              }}
+            >
+              <FontAwesomeIcon icon={ faStopCircle } size={ 80 } />
+            </TouchableOpacity>
+          }
+          {
+            (status === STATUS_TYPES.PAUSED) &&
+            <TouchableOpacity
+              onPress={() => setStatus(STATUS_TYPES.ACTIVE)}
+            >
+              <FontAwesomeIcon
+                icon={ faPlayCircle }
+                size={ 80 }
+                style={ styles.playIcon }
+              />
+            </TouchableOpacity>
+          }
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };

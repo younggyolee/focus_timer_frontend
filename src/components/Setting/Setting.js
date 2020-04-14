@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, Switch, Alert, Linking } from 'react-native';
+import { View, Text, Button, Switch, Alert, Linking, TouchableOpacity, SafeAreaView } from 'react-native';
 import styles from './Setting.style.ios.js';
 import AsyncStorage from '@react-native-community/async-storage';
 import * as Calendar from 'expo-calendar';
 import { createCalendarAsync } from '../../utils/calendar';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faHome } from '@fortawesome/free-solid-svg-icons';
 
 export default function Setting({ navigation }) {
   const [isCalendarEnabled, setIsCalendarEnabled] = useState(false);
@@ -70,26 +72,33 @@ export default function Setting({ navigation }) {
   }
 
   return(
-    <View style={styles.container}>
-      <Text>Setting</Text>
-      <Button
-        title='Main'
-        onPress={() => navigation.navigate('Main')}
-      />
-      <View>
-        <Text>Add events to calendar</Text>
-        <Switch
-          value={isCalendarEnabled}
-          onValueChange={toggleCalendarSwitch}
-        />
+    <SafeAreaView>
+      <View style={styles.container}>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Main')}
+            style={styles.mainButtonContainer}
+          >
+            <FontAwesomeIcon icon={ faHome } size={ 50 } />
+          </TouchableOpacity>
+          <Text style={styles.settingsHeaderText}>Settings</Text>
+        </View>
+        <View style={styles.contentContainer}>
+          <View style={styles.calendarSettingContainer}>
+            <View style={styles.calendarSettingTextContainer}>
+              <Text style={styles.calendarSettingText}>
+                Add events to calendar
+              </Text>
+            </View>
+            <View>
+              <Switch
+                value={isCalendarEnabled}
+                onValueChange={toggleCalendarSwitch}
+              />
+            </View>
+          </View>
+        </View>
       </View>
-
-      <Button
-        title='check calendar_settings'
-        onPress={async() => {
-          console.log(await AsyncStorage.getItem('calendar_settings'));
-        }}
-      />
-    </View>
+    </SafeAreaView>
   );
 };

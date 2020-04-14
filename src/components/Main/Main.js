@@ -11,6 +11,7 @@ import styles from './Main.style.ios.js';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faCog, faChartBar, faPlayCircle, faMicrophone } from '@fortawesome/free-solid-svg-icons'
+import { getIsoDate } from '../../utils/dates';
 
 const STATUS_TYPES = {
   WAITING: 'WAITING',
@@ -27,6 +28,7 @@ export default function Main({ navigation }) {
   const [text, setText] = useState('');
   const [locale, setLocale] = useState('');
   const [status, setStatus] = useState(STATUS_TYPES.WAITING);
+  const [queuedTimer, setQueuedTimer] = useState();
 
   useEffect(() => {
     (async() => {
@@ -38,6 +40,8 @@ export default function Main({ navigation }) {
           permission_requested: false
         }));
         AsyncStorage.setItem('has_launched', 'true');
+
+        AsyncStorage.setItem('events_by_date')
       }
     })();
   }, []);
@@ -45,7 +49,6 @@ export default function Main({ navigation }) {
   useEffect(() => {
     const extractedTags = [];
     for (word of title.split(' ')) {
-      console.log(word);
       if (word.includes('#')) {
         extractedTags.push(word);
       }
@@ -55,19 +58,29 @@ export default function Main({ navigation }) {
 
   useEffect(() => {
     if (status === STATUS_TYPES.STARTING_TIMER) {
-      PushNotificationIOS.checkPermissions(result => {
-        if (!result.alert || !result.sound) {
-          console.log('asking for permission');
-          PushNotificationIOS.requestPermissions();
-        }
-      });
- 
-      navigation.navigate("Timer", {
-        title,
-        tags,
-        hours,
-        minutes
-      });
+      if (title) {
+        // const hoursText = hours ? 
+        //   (hours > 1 ? `${hours} hours` : `${hours} hour`) :
+        //   '';
+        // const minutesText = minutes ? `${minutes} minutes` : '';
+        // const andText = hoursText && minutesText ? 'and' : '';
+        // const message = `Beginning ${title} for ${hoursText} ${andText} ${minutesText}`;
+        // setStatus(STATUS_TYPES.STARTING_TIMER);
+  
+        // Tts.speak(message);
+
+        PushNotificationIOS.checkPermissions(result => {
+          if (!result.alert || !result.sound) {
+            PushNotificationIOS.requestPermissions();
+          }
+        });
+        navigation.navigate("Timer", {
+          title,
+          tags,
+          hours,
+          minutes
+        });
+      }
       setStatus(STATUS_TYPES.WAITING);
     }
   }, [status]);
@@ -75,19 +88,19 @@ export default function Main({ navigation }) {
   useEffect(() => {
     console.log(status, hours, minutes, title);
     if (status === STATUS_TYPES.COMMAND_PROCESSED) {
-      console.log('tts');
       const hoursText = hours ? `${hours} hours` : '';
       const minutesText = minutes ? `${minutes} minutes` : '';
       const andText = hoursText && minutesText ? 'and' : '';
       const message = `Starting ${title} for ${hoursText} ${andText} ${minutesText}`;
       setStatus(STATUS_TYPES.STARTING_TIMER);
-      
+
       Tts.speak(message);
     }
   }, [status, hours, minutes, title]);
 
-  // trigger two changes at start up,
-  // to deal with change-not-triggering issue presumably from SWIFT API
+  // Trigger two changes on start-up,
+  // to deal with an issue presumably from SWIFT API
+  // where the first two changes don't trigger onChange
   useEffect(() => {
     setHours(0);
     setMinutes(0);
@@ -125,7 +138,17 @@ export default function Main({ navigation }) {
 
   useEffect(() => {
     if (status === STATUS_TYPES.DICTATING) {
-      
+      // console.log(text);
+      // extract tags
+      const extractedTags = [];
+      for (word of text.split(' ')) {
+        if (word.includes('#')) {
+          extractedTags.push(word);
+          console.log(word);
+        }
+      }
+      setTags(extractedTags);
+
       const timer = setTimeout(async() => {
         await Voice.stop();
         const response = await processTextToCommand(text, locale);
@@ -144,7 +167,9 @@ export default function Main({ navigation }) {
             console.log('could not process text');
             setStatus(STATUS_TYPES.WAITING);
           }
+          setText('');
       }, 3000);
+      setQueuedTimer(timer);
 
       return function cleanUp() {
         clearTimeout(timer);
@@ -173,13 +198,11 @@ export default function Main({ navigation }) {
     setText(e.value[0]);
   }
 
-  async function onRecordingButtonTouch() {
+  async function onRecordingIconTouch() {
     const permission = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
     switch (permission) {
       case RESULTS.UNAVAILABLE:
-        console.log(
-          'This feature is not available on this device'
-        );
+        console.log('This feature is not available on this device');
         return;
       case RESULTS.DENIED:
       case RESULTS.GRANTED:
@@ -192,7 +215,7 @@ export default function Main({ navigation }) {
           'Speech Recognition Access Required',
           'Please turn on Access for Speech Recognition in iPhone "Settings" to use the calendar syncing feature',
           [
-            {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+            {text: 'Cancel', style: 'cancel'},
             {text: 'Settings', onPress: () => Linking.openSettings()},
           ],
           { cancelable: false }
@@ -201,9 +224,16 @@ export default function Main({ navigation }) {
     }
   }
 
+  async function onCancelRecordingIconTouch() {
+    clearTimeout(queuedTimer);
+    setStatus(STATUS_TYPES.WAITING);
+    setText('');
+    await Voice.stop();
+  }
+
   return(
     <SafeAreaView>
-      <ScrollView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={() => navigation.navigate('Setting')}
@@ -225,12 +255,19 @@ export default function Main({ navigation }) {
           />
         </View>
         <View>
-          {tags.map(tag => 
-            <Text style={styles.tagTexts}>{tag}</Text>
+          {tags && tags.map((tag, index) => 
+            <Text style={styles.tagTexts} key={index}>
+              {tag}
+            </Text>
           )}
         </View>
         <View>
-
+          <Text style={styles.listeningText}>
+            {status === STATUS_TYPES.DICTATING ? 'Listening...' : ' '}
+          </Text>
+          <Text style={styles.dictatedText}>
+            {status === STATUS_TYPES.DICTATING ? text : ' '}
+          </Text>
         </View>
         <View style={styles.durationContainer}>
           <DateTimePicker
@@ -244,6 +281,29 @@ export default function Main({ navigation }) {
           />
         </View>
         <View style={styles.mainButtonsContainer}>
+          {status !== STATUS_TYPES.DICTATING && 
+          (
+            <TouchableOpacity
+              onPress={onRecordingIconTouch}
+            >
+              <FontAwesomeIcon icon={ faMicrophone } size={ 60 } />
+            </TouchableOpacity>
+          )
+          }
+          { status === STATUS_TYPES.DICTATING &&
+          (
+            <TouchableOpacity
+              onPress={onCancelRecordingIconTouch}
+            >
+              <FontAwesomeIcon
+                icon={ faMicrophone }
+                size={ 60 }
+                style={styles.cancelRecordingIcon}
+              />
+            </TouchableOpacity>
+          )
+          }
+          
           <TouchableOpacity 
             onPress={() => {
               setStatus(STATUS_TYPES.STARTING_TIMER);
@@ -251,25 +311,8 @@ export default function Main({ navigation }) {
           >
             <FontAwesomeIcon icon={ faPlayCircle } size={ 60 } />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={onRecordingButtonTouch}
-          >
-            <FontAwesomeIcon icon={ faMicrophone } size={ 60 } />
-          </TouchableOpacity>
         </View>
-        <View>
-          <Button
-            title="Start recording"
-            onPress={onRecordingButtonTouch}
-          />
-          <Text>
-            {status === STATUS_TYPES.DICTATING ? 'Speaking...' : ''}
-          </Text>
-          <Text>
-            {text}
-          </Text>
-        </View>
-        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };

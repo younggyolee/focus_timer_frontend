@@ -2,13 +2,46 @@
 import { StyleSheet } from 'react-native';
 
 export default  StyleSheet.create({
-  container: {
-    marginTop: 200,
+  containerActive: {
+    padding: 20,
+    backgroundColor: 'rgb(58,243,123)',
+    height: '100%'
+  },
+  containerInactive: {
+    padding: 20,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end'
+  },
+  keepAwakeIconOn: {
+    color: '#E54B4B'
+  },
+  keepAwakeIconOff: {
+    color: 'black'
+  },
+  titleText: {
+    fontSize: 60
+  },
+  endTimeIcon: {
+    color: 'grey'
+  },
+  endTimeText: {
+    fontSize: 20,
+    color: 'grey'
+  },
+  timeLeftText: {
+    fontSize: 90
+  },
+  mainInfoContainer: {
     alignItems: 'center'
   },
-  buttonsContainer: {
-    alignItems: 'center',
-    width: 100,
-    // backgroundColor: 'grey'
+  activeButtonContainer: {
+    marginTop: 150,
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  },
+  playIcon: {
+    color: 'rgb(58,243,123)'
   }
 });
