@@ -2,15 +2,9 @@ import * as Calendar from 'expo-calendar';
 import AsyncStorage from '@react-native-community/async-storage';
 
 export async function createCalendarAsync() {
-  async function getDefaultCalendarSource() {
-    const calendars = await Calendar.getCalendarsAsync();
-    const defaultCalendars = calendars.filter(each => each.source.name === 'Default');
-    return defaultCalendars[0].source;
-  }
-
   const defaultCalendarSource =
   Platform.OS === 'ios'
-    ? await getDefaultCalendarSource()
+    ? (await Calendar.getDefaultCalendarAsync()).source
     : { isLocalAccount: true, name: 'Expo Calendar' };
   
   console.log('defaultCalendarSource', defaultCalendarSource);

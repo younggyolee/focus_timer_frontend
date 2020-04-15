@@ -192,32 +192,6 @@ export default function Timer({ route, navigation }) {
     }
   }, [secondsLeft, endTime, status]);
 
-  storeBlock = async() => {
-    const block = {
-      title,
-      duration: secondsTotal - secondsLeft,
-      created_at: new Date().toISOString()
-    }
-
-    let blocks;
-    try {
-      blocks = await AsyncStorage.getItem('calendar_settings');
-      blocks = JSON.parse(blocks);
-      if (blocks == null) {
-        blocks = [];
-      }
-    } catch(e) {
-      console.error('Error while getting data \n', e);
-    }
-
-    try {
-      await AsyncStorage.setItem('blocks', JSON.stringify(blocks));
-      console.log('Data stored!');
-    } catch (e) {
-      console.error('Error while storing data\n', e);
-    }
-  }
-
   return(
     <SafeAreaView>
       <View 
@@ -274,7 +248,6 @@ export default function Timer({ route, navigation }) {
             <TouchableOpacity
               onPress={() => {
                 deactivateKeepAwake();
-                storeBlock();
                 navigation.navigate("Main");
               }}
             >

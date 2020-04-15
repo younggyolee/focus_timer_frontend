@@ -233,7 +233,7 @@ export default function Main({ navigation }) {
 
   return(
     <SafeAreaView>
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={() => navigation.navigate('Setting')}
@@ -312,7 +312,7 @@ export default function Main({ navigation }) {
             <FontAwesomeIcon icon={ faPlayCircle } size={ 60 } />
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
