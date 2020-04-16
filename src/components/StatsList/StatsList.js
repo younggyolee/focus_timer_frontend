@@ -52,16 +52,11 @@ export default function StatsList({ navigation }) {
       } catch (err) {
         console.error('Error while getting events\n', err);
       }
-      // console.log('events', events);
       for (date of filteredDates) {
-        console.log('eventsByDateFiltered', JSON.stringify(eventsByDateFiltered, null, '\t'));
         for (eventId of eventsByDateFiltered[date]) {
           const event = events[eventId];
           const duration = (new Date(event.end_date).valueOf() - new Date(event.start_date).valueOf()) / 1000;
-          // console.log('duration', duration);
-          // console.log('event', event);
           for (tag of event.tags) {
-            // console.log('tag', tag);
             if (tag in durationByTagObj) {
               ('adding duration', tag)
               durationByTagObj[tag] += duration;
@@ -72,8 +67,6 @@ export default function StatsList({ navigation }) {
           }
         }
       }
-      // // durationByTagObj === { coding: 10000, workout: 4000 }
-      // console.log('durationByTagObj', JSON.stringify(durationByTagObj, null, '\t'));
 
       // should be ordered by duration
       const durationByTagArr = [];
@@ -109,7 +102,6 @@ export default function StatsList({ navigation }) {
     'rgb(186, 188, 190)',
     'rgb(209, 122, 128)'
   ];
-
 
   return (
     <SafeAreaView>

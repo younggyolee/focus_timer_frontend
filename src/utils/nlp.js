@@ -46,6 +46,5 @@ export default async function processTextToCommand(text, locale) {
   }
   command.title = processedText;
   
-  console.log(command);
   return command;
 }

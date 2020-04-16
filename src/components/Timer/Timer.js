@@ -44,10 +44,7 @@ export default function Timer({ route, navigation }) {
       let isCalendarEnabled;
       let calendarSettings;
       let calendarId;
-      // const today = getIsoDate(new Date().valueOf());
       let events = JSON.parse(await AsyncStorage.getItem('events'));
-      // const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
-      // const todayEvents = eventsByDate[today] || [];
       
       if (isCalendarPermitted) {
         calendarSettings = await AsyncStorage.getItem('calendar_settings');
@@ -91,8 +88,6 @@ export default function Timer({ route, navigation }) {
         const todayEvents = eventsByDate[today] || [];
         const eventId = uuidv4();
         todayEvents.push(eventId);
-        console.log('todayEvents', todayEvents);
-        console.log('today', today);
         const data = {
           [today]: todayEvents
         };

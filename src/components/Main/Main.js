@@ -147,7 +147,6 @@ export default function Main({ navigation }) {
             console.log('could not process text');
             setStatus(STATUS_TYPES.WAITING);
           }
-          // setText('');
       }, 3000);
       setQueuedTimer(timer);
 
@@ -209,7 +208,6 @@ export default function Main({ navigation }) {
   async function onCancelRecordingIconTouch() {
     clearTimeout(queuedTimer);
     setStatus(STATUS_TYPES.WAITING);
-    // setText('');
     await Voice.stop();
   }
 
