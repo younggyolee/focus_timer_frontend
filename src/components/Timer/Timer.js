@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faInfinity, faBell, faPauseCircle, faStopCircle, faStop, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
+import { Audio } from 'expo-av';
 
 const STATUS_TYPES = {
   ACTIVE: 'ACTIVE',
@@ -30,6 +31,8 @@ export default function Timer({ route, navigation }) {
   const [isKeptAwake, setIsKeptAwake] = useState(false);
   const [calendarEventId, setCalendarEventId] = useState('');
   const [storageEventId, setStorageEventId] = useState('');
+  const [isSoundPlaying, setIsSoundPlaying] = useState(false);
+  let soundObject;
 
   useEffect(() => {
     (async function() {
@@ -44,7 +47,7 @@ export default function Timer({ route, navigation }) {
       let events = JSON.parse(await AsyncStorage.getItem('events'));
       const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
       const todayEvents = eventsByDate[today] || [];
-
+      
       if (isCalendarPermitted) {
         calendarSettings = await AsyncStorage.getItem('calendar_settings');
         calendarSettings = JSON.parse(calendarSettings);
@@ -63,7 +66,6 @@ export default function Timer({ route, navigation }) {
             'calendar_settings',
             JSON.stringify({ calendarId })
           );
-          console.log('calendar created');
         }
       }
 
@@ -121,7 +123,6 @@ export default function Timer({ route, navigation }) {
             storedTags[tag] = [eventId];
           }
         }
-        console.log('storedTags', storedTags);
         try {
           await AsyncStorage.mergeItem(
             'events_by_tag',
@@ -138,7 +139,6 @@ export default function Timer({ route, navigation }) {
             startDate: startTime,
             endDate: newEndTime
           });
-          // console.log('calendar event created');
           setCalendarEventId(eventId);
         }
       };
@@ -158,7 +158,6 @@ export default function Timer({ route, navigation }) {
             event.end_date = new Date().toISOString();
           }
         });
-        // console.log('todayEvents', todayEvents);
         try {
           await AsyncStorage.mergeItem(
             'events',
@@ -171,8 +170,8 @@ export default function Timer({ route, navigation }) {
     })();
   }, [status]);
 
+  // Timer core logic
   useEffect(() => {
-    // Timer core logic
     if (endTime && status === STATUS_TYPES.ACTIVE) {
       if (secondsLeft > 0) {
         const timer = setTimeout(() => {
@@ -185,20 +184,32 @@ export default function Timer({ route, navigation }) {
       }
 
       if (secondsLeft == 0 && status === STATUS_TYPES.ACTIVE) {
-        Vibration.vibrate();
-        console.log('VIBRATE!!!');
-        setStatus(STATUS_TYPES.COMPLETED);
+        (async() => {
+          Vibration.vibrate();
+          soundObject = new Audio.Sound();
+          await soundObject.loadAsync(require('../assets/sounds/alarm_bell.mp3'));
+          await soundObject.playAsync();
+          await soundObject.setOnPlaybackStatusUpdate((status) => {
+            setIsSoundPlaying(status.didJustFinish);
+          });
+          setStatus(STATUS_TYPES.COMPLETED);
+        })();
       }
     }
   }, [secondsLeft, endTime, status]);
 
   return(
-    <SafeAreaView>
+    <SafeAreaView style={
+      status === STATUS_TYPES.ACTIVE ?
+        styles.safeAreaViewContainerActive:
+        styles.safeAreaViewContainer
+      }
+    >
       <View 
         style={
           status === STATUS_TYPES.ACTIVE ?
             styles.containerActive :
-            styles.containerInactive
+            styles.container
         }
       >
         <View style={styles.headerContainer}>
@@ -222,10 +233,10 @@ export default function Timer({ route, navigation }) {
             {title}
           </Text>
           <Text style={styles.timeLeftText}>
-            {moment.duration(secondsLeft, "seconds").format("h:mm:ss")}
+            {moment.duration(secondsLeft, "seconds").format("hh:mm:ss", { trim: false })}
           </Text>
           <Text style={styles.endTimeText}>
-            <FontAwesomeIcon 
+            <FontAwesomeIcon
               icon={ faBell }
               style={styles.endTimeIcon}
             />
@@ -246,9 +257,10 @@ export default function Timer({ route, navigation }) {
           {
             ((status === STATUS_TYPES.PAUSED) || (status === STATUS_TYPES.COMPLETED)) &&
             <TouchableOpacity
-              onPress={() => {
+              onPress={async() => {
                 deactivateKeepAwake();
                 navigation.navigate("Main");
+                if (isSoundPlaying) await soundObject.stopAsync();
               }}
             >
               <FontAwesomeIcon icon={ faStopCircle } size={ 80 } />

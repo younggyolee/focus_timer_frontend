@@ -2,12 +2,17 @@
 import { StyleSheet } from 'react-native';
 
 export default  StyleSheet.create({
+  safeAreaViewContainerActive:{
+    backgroundColor: 'rgb(58,243,123)'
+  },
+  safeAreaViewContainer:{
+  },
   containerActive: {
     padding: 20,
     backgroundColor: 'rgb(58,243,123)',
     height: '100%'
   },
-  containerInactive: {
+  container: {
     padding: 20,
   },
   headerContainer: {

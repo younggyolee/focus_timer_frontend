@@ -2,6 +2,10 @@ PODS:
   - ActionSheetPicker-3.0 (2.4.2)
   - boost-for-react-native (1.63.0)
   - DoubleConversion (1.1.6)
+  - EXAV (8.1.0):
+    - UMCore
+    - UMFileSystemInterface
+    - UMPermissionsInterface
   - EXCalendar (8.1.0):
     - UMCore
     - UMPermissionsInterface
@@ -305,6 +309,7 @@ PODS:
 DEPENDENCIES:
   - ActionSheetPicker-3.0
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - EXAV (from `../node_modules/expo-av/ios`)
   - EXCalendar (from `../node_modules/expo-calendar/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXErrorRecovery (from `../node_modules/expo-error-recovery/ios`)
@@ -381,6 +386,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
+  EXAV:
+    :path: "../node_modules/expo-av/ios"
   EXCalendar:
     :path: "../node_modules/expo-calendar/ios"
   EXConstants:
@@ -514,6 +521,7 @@ SPEC CHECKSUMS:
   ActionSheetPicker-3.0: 5b62e07b00bd970509cf5ece99cb7447eae5dd0d
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: 5805e889d232975c086db112ece9ed034df7a0b2
+  EXAV: ed8de7f07a76c540815fbb2cc4686b97f4b038b5
   EXCalendar: f8e5aafd345d207becc8a1ec28cfbe42a1f2a599
   EXConstants: 9f18e9ef229706394f41735d9c7f309d479b36c0
   EXErrorRecovery: 88541714d9bbf8a823f4ee0b7078a92d3e0e42d2

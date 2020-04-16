@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, View, Button, ScrollView, Text, Alert, Linking, SafeAreaView, TouchableOpacity } from 'react-native';
+import { TextInput, View, ScrollView, Text, Alert, Linking, SafeAreaView, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import Voice from '@react-native-community/voice';
 import processTextToCommand from '../../utils/nlp';
-import { NativeModules } from 'react-native'
+import { NativeModules } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Tts from 'react-native-tts';
 import styles from './Main.style.ios.js';
 import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
-import { faCog, faChartBar, faPlayCircle, faMicrophone } from '@fortawesome/free-solid-svg-icons'
-import { getIsoDate } from '../../utils/dates';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCog, faChartBar, faPlayCircle, faMicrophone } from '@fortawesome/free-solid-svg-icons';
+import { Audio } from 'expo-av';
 
 const STATUS_TYPES = {
   WAITING: 'WAITING',
@@ -29,6 +29,7 @@ export default function Main({ navigation }) {
   const [locale, setLocale] = useState('');
   const [status, setStatus] = useState(STATUS_TYPES.WAITING);
   const [queuedTimer, setQueuedTimer] = useState();
+  let soundObject = new Audio.Sound();
 
   useEffect(() => {
     (async() => {
@@ -58,17 +59,7 @@ export default function Main({ navigation }) {
 
   useEffect(() => {
     if (status === STATUS_TYPES.STARTING_TIMER) {
-      if (title) {
-        // const hoursText = hours ? 
-        //   (hours > 1 ? `${hours} hours` : `${hours} hour`) :
-        //   '';
-        // const minutesText = minutes ? `${minutes} minutes` : '';
-        // const andText = hoursText && minutesText ? 'and' : '';
-        // const message = `Beginning ${title} for ${hoursText} ${andText} ${minutesText}`;
-        // setStatus(STATUS_TYPES.STARTING_TIMER);
-  
-        // Tts.speak(message);
-
+      // if (title) {
         PushNotificationIOS.checkPermissions(result => {
           if (!result.alert || !result.sound) {
             PushNotificationIOS.requestPermissions();
@@ -78,9 +69,9 @@ export default function Main({ navigation }) {
           title,
           tags,
           hours,
-          minutes
+          minutes,
         });
-      }
+      // }
       setStatus(STATUS_TYPES.WAITING);
     }
   }, [status]);
@@ -138,7 +129,6 @@ export default function Main({ navigation }) {
 
   useEffect(() => {
     if (status === STATUS_TYPES.DICTATING) {
-      // console.log(text);
       // extract tags
       const extractedTags = [];
       for (word of text.split(' ')) {
@@ -206,11 +196,12 @@ export default function Main({ navigation }) {
         return;
       case RESULTS.DENIED:
       case RESULTS.GRANTED:
-        await Voice.start(locale);
         setStatus(STATUS_TYPES.DICTATING);
+        await Voice.start(locale);        
+        await soundObject.loadAsync(require('../assets/sounds/listening_tone.mp3'));
+        await soundObject.playAsync();
         return;
       case RESULTS.BLOCKED:
-        // pop up + link to settings
         Alert.alert(
           'Speech Recognition Access Required',
           'Please turn on Access for Speech Recognition in iPhone "Settings" to use the calendar syncing feature',
@@ -248,6 +239,7 @@ export default function Main({ navigation }) {
         </View>
         <View style={styles.textInputContainer}>
           <TextInput
+            testID='titleTextInput'
             style={styles.titleInput}
             placeholder="Type title here"
             value={title}
@@ -282,29 +274,29 @@ export default function Main({ navigation }) {
         </View>
         <View style={styles.mainButtonsContainer}>
           {status !== STATUS_TYPES.DICTATING && 
-          (
-            <TouchableOpacity
-              onPress={onRecordingIconTouch}
-            >
-              <FontAwesomeIcon icon={ faMicrophone } size={ 60 } />
-            </TouchableOpacity>
-          )
+            (
+              <TouchableOpacity
+                onPress={onRecordingIconTouch}
+              >
+                <FontAwesomeIcon icon={ faMicrophone } size={ 60 } />
+              </TouchableOpacity>
+            )
           }
           { status === STATUS_TYPES.DICTATING &&
-          (
-            <TouchableOpacity
-              onPress={onCancelRecordingIconTouch}
-            >
-              <FontAwesomeIcon
-                icon={ faMicrophone }
-                size={ 60 }
-                style={styles.cancelRecordingIcon}
-              />
-            </TouchableOpacity>
-          )
+            (
+              <TouchableOpacity
+                onPress={onCancelRecordingIconTouch}
+              >
+                <FontAwesomeIcon
+                  icon={ faMicrophone }
+                  size={ 60 }
+                  style={styles.cancelRecordingIcon}
+                />
+              </TouchableOpacity>
+            )
           }
-          
-          <TouchableOpacity 
+          <TouchableOpacity
+            testID='startButton'
             onPress={() => {
               setStatus(STATUS_TYPES.STARTING_TIMER);
             }}
