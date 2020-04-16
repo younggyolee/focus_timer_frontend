@@ -14,14 +14,15 @@ VIEW_TYPES = {
 }
 
 export default function StatsList({ navigation }) {
-  const [startDate, setStartDate] = useState('2020-04-01');
-  const [endDate, setEndDate] = useState('2020-04-13');
+  const today = getIsoDate(new Date().valueOf());
+  const screenWidth = Dimensions.get("window").width;
+
+  const [startDate, setStartDate] = useState(today);
+  const [endDate, setEndDate] = useState(today);
   const [eventsByTag, setEventsByTag] = useState([]);
   const [eventsByTagMaxDuration, setEventsByTagMaxDuration] = useState(10000);
   const [selectedDaysNum, setSelectedDaysNum] = useState(0);
 
-  const screenWidth = Dimensions.get("window").width;
-  
   useEffect(() => {
     (async() => {
       let eventsByDate;
@@ -51,24 +52,28 @@ export default function StatsList({ navigation }) {
       } catch (err) {
         console.error('Error while getting events\n', err);
       }
-      console.log('events', events);
+      // console.log('events', events);
       for (date of filteredDates) {
         console.log('eventsByDateFiltered', JSON.stringify(eventsByDateFiltered, null, '\t'));
         for (eventId of eventsByDateFiltered[date]) {
           const event = events[eventId];
           const duration = (new Date(event.end_date).valueOf() - new Date(event.start_date).valueOf()) / 1000;
-          
+          // console.log('duration', duration);
+          // console.log('event', event);
           for (tag of event.tags) {
+            // console.log('tag', tag);
             if (tag in durationByTagObj) {
+              ('adding duration', tag)
               durationByTagObj[tag] += duration;
             } else {
+              ('creating duration', tag)
               durationByTagObj[tag] = duration;
             }
           }
         }
       }
       // // durationByTagObj === { coding: 10000, workout: 4000 }
-      // console.log('durationByTagObj', durationByTagObj);
+      // console.log('durationByTagObj', JSON.stringify(durationByTagObj, null, '\t'));
 
       // should be ordered by duration
       const durationByTagArr = [];
@@ -89,7 +94,6 @@ export default function StatsList({ navigation }) {
   }, [startDate, endDate]);
 
   useEffect(() => {
-    const today = getIsoDate(new Date().valueOf());
     const nthDayFromToday = getIsoDate(addDays(new Date().valueOf(), -selectedDaysNum));
     setStartDate(nthDayFromToday);
     setEndDate(today);

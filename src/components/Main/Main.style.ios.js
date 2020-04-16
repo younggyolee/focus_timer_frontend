@@ -3,7 +3,8 @@ import { StyleSheet } from 'react-native';
 export default  StyleSheet.create({
   container: {
     fontSize: 20,
-    padding: 30
+    paddingLeft: 30,
+    paddingRight: 30
   },
   headerContainer:{
     paddingTop: 20,
@@ -16,7 +17,6 @@ export default  StyleSheet.create({
   titleInput: {
     borderStyle: 'solid',
     borderBottomWidth: 2,
-    margin: 50,
     padding: 10,
     textAlign: 'center',
     fontSize: 30

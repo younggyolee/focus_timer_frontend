@@ -23,7 +23,8 @@ const STATUS_TYPES = {
 };
 
 export default function Timer({ route, navigation }) {
-  const { title, tags } = route.params;
+  const { title } = route.params;
+  let tags = route.params.tags || [];
   const secondsTotal = 3600 * route.params.hours + 60 * route.params.minutes;
   const [secondsLeft, setSecondsLeft] = useState(secondsTotal);
   const [status, setStatus] = useState(STATUS_TYPES.ACTIVE);
@@ -43,10 +44,10 @@ export default function Timer({ route, navigation }) {
       let isCalendarEnabled;
       let calendarSettings;
       let calendarId;
-      const today = getIsoDate(new Date().valueOf());
+      // const today = getIsoDate(new Date().valueOf());
       let events = JSON.parse(await AsyncStorage.getItem('events'));
-      const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
-      const todayEvents = eventsByDate[today] || [];
+      // const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
+      // const todayEvents = eventsByDate[today] || [];
       
       if (isCalendarPermitted) {
         calendarSettings = await AsyncStorage.getItem('calendar_settings');
@@ -85,16 +86,25 @@ export default function Timer({ route, navigation }) {
         });
 
         // save the event to device storage
+        const today = getIsoDate(new Date().valueOf());
+        const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
+        const todayEvents = eventsByDate[today] || [];
         const eventId = uuidv4();
         todayEvents.push(eventId);
+        console.log('todayEvents', todayEvents);
+        console.log('today', today);
+        const data = {
+          [today]: todayEvents
+        };
+        console.log('data', JSON.stringify(data));
         try {
           await AsyncStorage.mergeItem(
             'events_by_date',
-            JSON.stringify({[today]: todayEvents})
+            JSON.stringify(data)
           );
           setStorageEventId(eventId);
         } catch (err) {
-          console.error('Error while storing events_by_day\n', err);
+          console.log('Error while storing events_by_day\n', err);
         }
 
         // save the event details by its id separately
@@ -111,7 +121,7 @@ export default function Timer({ route, navigation }) {
             })
           );
         } catch (err) {
-          console.error('Error while storing event into events')
+          console.log('Error while storing event into events')
         }
 
         // save the event to device storage, categorizing by tag
@@ -129,7 +139,7 @@ export default function Timer({ route, navigation }) {
             JSON.stringify(storedTags)
           );
         } catch (err) {
-          console.error('Error while storing event id to events_by_tag\n', err);
+          console.log('Error while storing event id to events_by_tag\n', err);
         }
 
         // create an event on calendar
@@ -145,26 +155,23 @@ export default function Timer({ route, navigation }) {
 
       if (status === STATUS_TYPES.PAUSED) {
         // update event on calendar
-        if (isCalendarPermitted && isCalendarEnabled && calendarId) {
+        if (isCalendarPermitted && isCalendarEnabled && calendarId && calendarEventId) {
           Calendar.updateEventAsync(calendarEventId, {
             endDate: new Date()
           });
         }
 
-        // update event in storage
-        // search for the event
-        todayEvents.forEach(event => {
-          if (event.id === storageEventId) {
-            event.end_date = new Date().toISOString();
+        // update [end_date] of event in storage
+        const event = events[storageEventId];
+        if (event) {
+          event.end_date = new Date().toISOString();
+          try {
+            await AsyncStorage.mergeItem('events', JSON.stringify({
+              [storageEventId]: event
+            }));
+          } catch (err) {
+            console.log('Error while updating event in AsyncStorage', err);
           }
-        });
-        try {
-          await AsyncStorage.mergeItem(
-            'events',
-            JSON.stringify({[today]: todayEvents})
-          );
-        } catch (err) {
-          console.error('Error while updating end_date of a storage event\n', err);
         }
       }
     })();

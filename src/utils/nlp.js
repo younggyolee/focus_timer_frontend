@@ -12,7 +12,8 @@ export default async function processTextToCommand(text, locale) {
   const command = {
     result: '',
     title: '',
-    duration: 0
+    duration: 0,
+    tags: []
   };
 
   let processedText = text;
@@ -20,10 +21,11 @@ export default async function processTextToCommand(text, locale) {
   response.entities.map(entity => {
     if (entity.entity === 'duration') {
       command.duration = Number(command.duration) + Number(entity.resolution.values[0].value);
+      durationIndexes.push(entity.start);
+      durationIndexes.push(entity.end);
+    } else if (entity.entity === 'hashtag') {
+      command.tags.push(entity.resolution.value);
     }
-    durationIndexes.push(entity.start);
-    durationIndexes.push(entity.end);
-    // console.log(processedText);
   });
 
   const durationStart = Math.min(...durationIndexes);
@@ -32,13 +34,6 @@ export default async function processTextToCommand(text, locale) {
   if (durationStart && durationEnd) {
     processedText = text.slice(0, durationStart) + text.slice(durationEnd + 1,);
   }
-
-  // // extract tags
-  // for (word in processedText.split(' ')) {
-  //   if ('#' in word) {
-  //     command.tags.push(word);
-  //   }
-  // }
 
   // remove prepositions for English
   console.log(response.locale);

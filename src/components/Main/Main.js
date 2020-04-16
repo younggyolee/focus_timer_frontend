@@ -41,8 +41,6 @@ export default function Main({ navigation }) {
           permission_requested: false
         }));
         AsyncStorage.setItem('has_launched', 'true');
-
-        AsyncStorage.setItem('events_by_date')
       }
     })();
   }, []);
@@ -59,30 +57,33 @@ export default function Main({ navigation }) {
 
   useEffect(() => {
     if (status === STATUS_TYPES.STARTING_TIMER) {
-      // if (title) {
-        PushNotificationIOS.checkPermissions(result => {
-          if (!result.alert || !result.sound) {
-            PushNotificationIOS.requestPermissions();
-          }
-        });
-        navigation.navigate("Timer", {
-          title,
-          tags,
-          hours,
-          minutes,
-        });
-      // }
+      PushNotificationIOS.checkPermissions(result => {
+        if (!result.alert || !result.sound) {
+          PushNotificationIOS.requestPermissions();
+        }
+      });
+      navigation.navigate("Timer", {
+        title,
+        tags,
+        hours,
+        minutes,
+      });
       setStatus(STATUS_TYPES.WAITING);
     }
   }, [status]);
 
   useEffect(() => {
-    console.log(status, hours, minutes, title);
     if (status === STATUS_TYPES.COMMAND_PROCESSED) {
-      const hoursText = hours ? `${hours} hours` : '';
-      const minutesText = minutes ? `${minutes} minutes` : '';
-      const andText = hoursText && minutesText ? 'and' : '';
-      const message = `Starting ${title} for ${hoursText} ${andText} ${minutesText}`;
+      const hoursMessage = 
+        hours ? 
+        (hours > 1 ? `${hours} hours` : `${hours} hour`) :
+        '';
+      const minutesMessage =
+        minutes ?
+        (minutes > 1 ? `${minutes} minutes` : `${minutes} minute`) :
+        '';
+      const andMessage = hoursMessage && minutesMessage ? 'and' : '';
+      const message = `Starting ${title} for ${hoursMessage} ${andMessage} ${minutesMessage}`;
       setStatus(STATUS_TYPES.STARTING_TIMER);
 
       Tts.speak(message);
@@ -129,21 +130,10 @@ export default function Main({ navigation }) {
 
   useEffect(() => {
     if (status === STATUS_TYPES.DICTATING) {
-      // extract tags
-      const extractedTags = [];
-      for (word of text.split(' ')) {
-        if (word.includes('#')) {
-          extractedTags.push(word);
-          console.log(word);
-        }
-      }
-      setTags(extractedTags);
-
       const timer = setTimeout(async() => {
         await Voice.stop();
         const response = await processTextToCommand(text, locale);
           if (response.duration && response.title) {
-            console.log('ok', response);
             const totalSeconds = Number(response.duration);
             const hrs = Math.floor(totalSeconds / 3600);
             const mins = (totalSeconds - (hrs * 3600)) / 60;
@@ -157,7 +147,7 @@ export default function Main({ navigation }) {
             console.log('could not process text');
             setStatus(STATUS_TYPES.WAITING);
           }
-          setText('');
+          // setText('');
       }, 3000);
       setQueuedTimer(timer);
 
@@ -177,6 +167,7 @@ export default function Main({ navigation }) {
 
   function onSpeechEnd(e) {
     console.log('onSpeechEnd: ', e);
+    setText('');
   }
 
   function onSpeechError(e) {
@@ -218,7 +209,7 @@ export default function Main({ navigation }) {
   async function onCancelRecordingIconTouch() {
     clearTimeout(queuedTimer);
     setStatus(STATUS_TYPES.WAITING);
-    setText('');
+    // setText('');
     await Voice.stop();
   }
 
@@ -241,7 +232,7 @@ export default function Main({ navigation }) {
           <TextInput
             testID='titleTextInput'
             style={styles.titleInput}
-            placeholder="Type title here"
+            placeholder='Coding for 2 hour #coding'
             value={title}
             onChangeText={text => setTitle(text)}
           />

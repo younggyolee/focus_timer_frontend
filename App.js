@@ -1,11 +1,11 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import Main from './components/Main/Main';
-import Timer from './components/Timer/Timer';
-import Setting from './components/Setting/Setting';
-import StatsList from './components/StatsList/StatsList';
-import StatsPerTag from './components/StatsPerTag/StatsPerTag';
+import Main from './src/components/Main/Main';
+import Timer from './src/components/Timer/Timer';
+import Setting from './src/components/Setting/Setting';
+import StatsList from './src/components/StatsList/StatsList';
+import StatsPerTag from './src/components/StatsPerTag/StatsPerTag';
 
 const Stack = createStackNavigator();
 
