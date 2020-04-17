@@ -73,7 +73,6 @@ export default function Timer({ route, navigation }) {
         setEndTime(newEndTime);
         const startTime = new Date().valueOf();
 
-        // schedule a notification
         PushNotificationIOS.scheduleLocalNotification({
           fireDate: new Date(newEndTime).valueOf(),
           alertTitle: `${title} has completed!`,
@@ -82,17 +81,17 @@ export default function Timer({ route, navigation }) {
           applicationIconBadgeNumber: 0
         });
 
-        // save the event to device storage
-        const today = getIsoDate(new Date().valueOf());
-        const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
-        const todayEvents = eventsByDate[today] || [];
-        const eventId = uuidv4();
-        todayEvents.push(eventId);
-        const data = {
-          [today]: todayEvents
-        };
-        console.log('data', JSON.stringify(data));
+        // save the event to device storage, by date
+        let eventId;    
         try {
+          const today = getIsoDate(new Date().valueOf());
+          const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
+          const todayEvents = eventsByDate[today] || [];
+          eventId = uuidv4();
+          todayEvents.push(eventId);
+          const data = {
+            [today]: todayEvents
+          };
           await AsyncStorage.mergeItem(
             'events_by_date',
             JSON.stringify(data)
@@ -102,36 +101,37 @@ export default function Timer({ route, navigation }) {
           console.log('Error while storing events_by_day\n', err);
         }
 
-        // save the event details by its id separately
+        // save the event details into device storage, by its eventId
         try {
+          const data = {
+            [eventId]: {
+              title,
+              tags,
+              start_date: new Date(startTime).toISOString(),
+              end_date: new Date(newEndTime).toISOString()
+            }
+          }
           await AsyncStorage.mergeItem(
             'events',
-            JSON.stringify({
-              [eventId]: {
-                title,
-                tags,
-                start_date: new Date(startTime).toISOString(),
-                end_date: new Date(newEndTime).toISOString()
-              }
-            })
+            JSON.stringify(data)
           );
         } catch (err) {
-          console.log('Error while storing event into events')
+          console.log('Error while storing event into events\n', err);
         }
 
-        // save the event to device storage, categorizing by tag
-        const storedTags = JSON.parse(await AsyncStorage.getItem('events_by_tag')) || {};
-        for (tag of tags) {
-          if (Object.keys(storedTags).includes(tag)) {
-            storedTags[tag].push(eventId);
-          } else {
-            storedTags[tag] = [eventId];
-          }
-        }
+        // save the event to device storage, by its tag
         try {
+          const eventsByTag = JSON.parse(await AsyncStorage.getItem('events_by_tag')) || {};
+          const data = {};
+          for (tag of tags) {
+            data[tag] = eventsByTag[tag] ?
+                [...eventsByTag[tag], eventId] : 
+                [eventId];
+            // data[tag].push(eventId);
+          }
           await AsyncStorage.mergeItem(
             'events_by_tag',
-            JSON.stringify(storedTags)
+            JSON.stringify(data)
           );
         } catch (err) {
           console.log('Error while storing event id to events_by_tag\n', err);
@@ -161,9 +161,12 @@ export default function Timer({ route, navigation }) {
         if (event) {
           event.end_date = new Date().toISOString();
           try {
-            await AsyncStorage.mergeItem('events', JSON.stringify({
-              [storageEventId]: event
-            }));
+            await AsyncStorage.mergeItem(
+              'events', 
+              JSON.stringify({
+                [storageEventId]: event
+              })
+            );
           } catch (err) {
             console.log('Error while updating event in AsyncStorage', err);
           }
@@ -172,7 +175,8 @@ export default function Timer({ route, navigation }) {
     })();
   }, [status]);
 
-  // Timer core logic
+  // Timer core logic, 
+  // which updates timer every second
   useEffect(() => {
     if (endTime && status === STATUS_TYPES.ACTIVE) {
       if (secondsLeft > 0) {

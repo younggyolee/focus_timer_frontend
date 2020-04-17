@@ -4,13 +4,16 @@ export default StyleSheet.create({
   container: {
     padding: 20
   },
+
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start'
   },
+
   contentContainer: {
     height: '100%'
   },
+
   dateRangeButtonsContainer: {
     backgroundColor: 'lightgrey',
     padding: 3,
@@ -20,29 +23,35 @@ export default StyleSheet.create({
     marginTop: 10,
     marginBottom: 10
   },
+
   rangeButtonSelected:{
     borderRadius: 10,
-    // borderWidth: 2,
     width: 90,
     backgroundColor: 'white'
   },
+
   rangeButton: {
     width: 90
   },
+
   tagsHeaderContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start'
   },
+
   tagsHeaderText: {
     fontSize: 30
   },
+
   tagsHeaderDateRangeText: {
     fontSize: 20,
     color: 'grey'
   },
-  barsContainer: {
-    // padding: 20
+
+  barContainer: {
+    flexDirection: 'row'
   },
+
   bars: {
     paddingLeft: 20,
     justifyContent: 'center',
@@ -52,10 +61,17 @@ export default StyleSheet.create({
     backgroundColor: 'grey',
     borderRadius: 20
   },
+
   barTitleText: {
-    fontSize: 20
+    fontSize: 20,
+    position: "absolute",
+    left: 0,
+    top: 10
   },
+
   barDurationText: {
-    fontSize: 15
+    fontSize: 15,
+    position: 'absolute',
+    top: 35
   }
 });

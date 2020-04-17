@@ -7,8 +7,6 @@ export async function createCalendarAsync() {
     ? (await Calendar.getDefaultCalendarAsync()).source
     : { isLocalAccount: true, name: 'Expo Calendar' };
   
-  console.log('defaultCalendarSource', defaultCalendarSource);
-  
   const newCalendarId = await Calendar.createCalendarAsync({
     title: 'Focus Timer Calendar',
     color: 'Blue',
@@ -19,7 +17,6 @@ export async function createCalendarAsync() {
     ownerAccount: 'personal',
     accessLevel: Calendar.CalendarAccessLevel.OWNER,
   });
-  console.log('calendar created ', newCalendarId);
   await AsyncStorage.mergeItem(
     'calendar_settings',
     JSON.stringify({ calendar_id: newCalendarId })

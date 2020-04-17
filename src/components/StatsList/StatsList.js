@@ -28,8 +28,9 @@ export default function StatsList({ navigation }) {
       let eventsByDate;
       try {
         eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date'));
+        console.log('events_by_date', eventsByDate);
       } catch (err) {
-        console.error('Error while getting eventsByDate from AsyncStorage');
+        console.error('Error while getting eventsByDate from AsyncStorage\n', err);
       }
 
       // create a date range between startDate and endDate
@@ -49,6 +50,7 @@ export default function StatsList({ navigation }) {
       let events;
       try {
         events = JSON.parse(await AsyncStorage.getItem('events'));
+        console.log('events', events);
       } catch (err) {
         console.error('Error while getting events\n', err);
       }
@@ -148,13 +150,17 @@ export default function StatsList({ navigation }) {
             <Text style={styles.tagsHeaderText}>Tags</Text>
           </View>
           <View>
-            <Text style={styles.tagsHeaderDateRangeText}>{moment(startDate).format('MMM DD, YYYY')}-{moment(endDate).format('MMM DD, YYYY')}</Text>
+            <Text style={styles.tagsHeaderDateRangeText}>
+              {moment(startDate).format('MMM DD, YYYY')}-{moment(endDate).format('MMM DD, YYYY')}
+            </Text>
           </View>
           <View style={styles.barsContainer}>
             {
               eventsByTag.map((event, index) => {
+                const barWidth = (event.duration / eventsByTagMaxDuration) * screenWidth * 0.8;
                 return (
                   <TouchableOpacity
+                    style={styles.barContainer}
                     onPress={() => 
                       navigation.navigate('StatsPerTag', {
                         tag: event.tag
@@ -165,21 +171,22 @@ export default function StatsList({ navigation }) {
                     <Animated.View
                       style={[
                         styles.bars,
-                        { width: (event.duration / eventsByTagMaxDuration) * screenWidth * 0.8,
+                        {
+                          width: barWidth,
                           backgroundColor: bgColors[index % 8]
                         }
                       ]}
                       key={index}
                     >
-                      <Text style={styles.barTitleText}>
-                        {event.tag}
-                      </Text>
-                      <Text style={styles.barDurationText}>
-                        {moment.duration(event.duration, "seconds").format("hh:mm:ss", {
-                          trim: false
-                        })}
-                      </Text>
                     </Animated.View>
+                    <Text style={styles.barTitleText}>
+                      {event.tag}
+                    </Text>
+                    <Text style={styles.barDurationText}>
+                      {moment.duration(event.duration, "seconds").format("hh:mm:ss", {
+                        trim: false
+                      })}
+                    </Text>
                   </TouchableOpacity>
                 );
               })

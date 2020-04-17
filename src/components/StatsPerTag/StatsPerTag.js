@@ -28,6 +28,7 @@ export default function StatsPerTag({ route, navigation }) {
       let events;
       try {
         eventsByTag = JSON.parse(await AsyncStorage.getItem('events_by_tag'));
+        console.log('events_by_tag', eventsByTag);
         events = JSON.parse(await AsyncStorage.getItem('events'));
       } catch (err) {
         console.error(err);

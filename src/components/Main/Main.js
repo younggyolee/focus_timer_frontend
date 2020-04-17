@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextInput, View, ScrollView, Text, Alert, Linking, SafeAreaView, TouchableOpacity } from 'react-native';
+import { TextInput, View, ScrollView, Text, Alert, Linking, SafeAreaView, TouchableOpacity, Button } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import Voice from '@react-native-community/voice';
@@ -40,7 +40,8 @@ export default function Main({ navigation }) {
           is_calendar_enabled: false,
           permission_requested: false
         }));
-        AsyncStorage.setItem('has_launched', 'true');
+        await AsyncStorage.setItem('has_launched', JSON.stringify(true));
+        await AsyncStorage.setItem('events_by_date', JSON.stringify({}));
       }
     })();
   }, []);
@@ -85,7 +86,6 @@ export default function Main({ navigation }) {
       const andMessage = hoursMessage && minutesMessage ? 'and' : '';
       const message = `Starting ${title} for ${hoursMessage} ${andMessage} ${minutesMessage}`;
       setStatus(STATUS_TYPES.STARTING_TIMER);
-
       Tts.speak(message);
     }
   }, [status, hours, minutes, title]);
@@ -230,7 +230,7 @@ export default function Main({ navigation }) {
           <TextInput
             testID='titleTextInput'
             style={styles.titleInput}
-            placeholder='Coding for 2 hour #coding'
+            placeholder='Work out #workout'
             value={title}
             onChangeText={text => setTitle(text)}
           />
