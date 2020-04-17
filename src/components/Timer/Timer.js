@@ -15,12 +15,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faInfinity, faBell, faPauseCircle, faStopCircle, faStop, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 import { Audio } from 'expo-av';
-
-const STATUS_TYPES = {
-  ACTIVE: 'ACTIVE',
-  PAUSED: 'PAUSED',
-  COMPLETED: 'COMPLETED'
-};
+import { TIMER_STATUS_TYPES as STATUS_TYPES} from '../../constants/stateTypes.js';
 
 export default function Timer({ route, navigation }) {
   const { title } = route.params;
@@ -32,8 +27,7 @@ export default function Timer({ route, navigation }) {
   const [isKeptAwake, setIsKeptAwake] = useState(false);
   const [calendarEventId, setCalendarEventId] = useState('');
   const [storageEventId, setStorageEventId] = useState('');
-  const [isSoundPlaying, setIsSoundPlaying] = useState(false);
-  let soundObject;
+  const [soundObject, setSoundObject] = useState(new Audio.Sound());
 
   useEffect(() => {
     (async function() {
@@ -88,7 +82,6 @@ export default function Timer({ route, navigation }) {
           const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
           const todayEvents = eventsByDate[today] || [];
           eventId = uuidv4();
-          // todayEvents.push(eventId);
           const data = {
             [today]: [...todayEvents, eventId]
           };
@@ -190,19 +183,31 @@ export default function Timer({ route, navigation }) {
       }
 
       if (secondsLeft == 0 && status === STATUS_TYPES.ACTIVE) {
-        (async() => {
-          Vibration.vibrate();
-          soundObject = new Audio.Sound();
-          await soundObject.loadAsync(require('../assets/sounds/alarm_bell.mp3'));
-          await soundObject.playAsync();
-          await soundObject.setOnPlaybackStatusUpdate((status) => {
-            setIsSoundPlaying(status.didJustFinish);
-          });
-          setStatus(STATUS_TYPES.COMPLETED);
-        })();
+        Vibration.vibrate();
+        try {
+          (async() => {
+            // setSoundB = new Audio.Sound();
+            await soundObject.loadAsync(require('../assets/sounds/alarm_bell.mp3'));      
+            await soundObject.playAsync();
+          })();
+        } catch (err) {
+          console.log('Error occured while trying to play alarm_bell \n', err);
+        }
+        setStatus(STATUS_TYPES.COMPLETED);
       }
     }
   }, [secondsLeft, endTime, status]);
+
+  async function onStopIconClick() {
+    deactivateKeepAwake();
+    try {
+      await soundObject.stopAsync();
+      await soundObject.unloadAsync();
+    } catch (err) {
+      console.log('Error while stopping soundObject\n', err);
+    }
+    navigation.navigate("Main");
+  }
 
   return(
     <SafeAreaView style={
@@ -263,11 +268,7 @@ export default function Timer({ route, navigation }) {
           {
             ((status === STATUS_TYPES.PAUSED) || (status === STATUS_TYPES.COMPLETED)) &&
             <TouchableOpacity
-              onPress={async() => {
-                deactivateKeepAwake();
-                navigation.navigate("Main");
-                if (isSoundPlaying) await soundObject.stopAsync();
-              }}
+              onPress={onStopIconClick}
             >
               <FontAwesomeIcon icon={ faStopCircle } size={ 80 } />
             </TouchableOpacity>

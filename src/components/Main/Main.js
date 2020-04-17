@@ -11,14 +11,7 @@ import styles from './Main.style.ios.js';
 import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCog, faChartBar, faPlayCircle, faMicrophone } from '@fortawesome/free-solid-svg-icons';
-import { Audio } from 'expo-av';
-
-const STATUS_TYPES = {
-  WAITING: 'WAITING',
-  DICTATING: 'DICTATING',
-  COMMAND_PROCESSED: 'COMMAND_PROCESSED',
-  STARTING_TIMER: 'STARTING_TIMER'
-};
+import { MAIN_STATUS_TYPES as STATUS_TYPES} from '../../constants/stateTypes.js';
 
 export default function Main({ navigation }) {
   const [title, setTitle] = useState('');
@@ -29,7 +22,6 @@ export default function Main({ navigation }) {
   const [locale, setLocale] = useState('');
   const [status, setStatus] = useState(STATUS_TYPES.WAITING);
   const [queuedTimer, setQueuedTimer] = useState();
-  let soundObject = new Audio.Sound();
 
   useEffect(() => {
     (async() => {
@@ -63,13 +55,14 @@ export default function Main({ navigation }) {
           PushNotificationIOS.requestPermissions();
         }
       });
-      navigation.navigate("Timer", {
+      setStatus(STATUS_TYPES.WAITING);
+
+      navigation.navigate('Timer', {
         title,
         tags,
         hours,
         minutes,
       });
-      setStatus(STATUS_TYPES.WAITING);
     }
   }, [status]);
 
@@ -187,9 +180,7 @@ export default function Main({ navigation }) {
       case RESULTS.DENIED:
       case RESULTS.GRANTED:
         setStatus(STATUS_TYPES.DICTATING);
-        await Voice.start(locale);        
-        await soundObject.loadAsync(require('../assets/sounds/listening_tone.mp3'));
-        await soundObject.playAsync();
+        await Voice.start(locale);
         return;
       case RESULTS.BLOCKED:
         Alert.alert(
