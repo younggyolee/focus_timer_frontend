@@ -33,6 +33,7 @@ export default  StyleSheet.create({
   },
 
   titleText: {
+    textAlign: 'center',
     fontSize: 60
   },
 
@@ -46,7 +47,7 @@ export default  StyleSheet.create({
   },
 
   timeLeftText: {
-    fontSize: 90
+    fontSize: 70
   },
 
   mainInfoContainer: {
@@ -54,7 +55,7 @@ export default  StyleSheet.create({
   },
 
   activeButtonContainer: {
-    marginTop: 150,
+    marginTop: 50,
     flexDirection: 'row',
     justifyContent: 'space-around'
   },

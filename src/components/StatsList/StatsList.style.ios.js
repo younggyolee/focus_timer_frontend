@@ -65,13 +65,14 @@ export default StyleSheet.create({
   barTitleText: {
     fontSize: 20,
     position: "absolute",
-    left: 0,
+    left: 10,
     top: 10
   },
 
   barDurationText: {
     fontSize: 15,
     position: 'absolute',
+    left: 10,
     top: 35
   }
 });

@@ -8,7 +8,7 @@ import { NativeModules } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Tts from 'react-native-tts';
 import styles from './Main.style.ios.js';
-import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCog, faChartBar, faPlayCircle, faMicrophone } from '@fortawesome/free-solid-svg-icons';
 import { Audio } from 'expo-av';
@@ -230,7 +230,7 @@ export default function Main({ navigation }) {
           <TextInput
             testID='titleTextInput'
             style={styles.titleInput}
-            placeholder='Work out #workout'
+            placeholder='Jogging #workout'
             value={title}
             onChangeText={text => setTitle(text)}
           />

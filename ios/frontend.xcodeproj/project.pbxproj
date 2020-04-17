@@ -14,6 +14,7 @@
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		19B563D22449A14A0003E2C0 /* stopwatch.png in Resources */ = {isa = PBXBuildFile; fileRef = 19B563D12449A14A0003E2C0 /* stopwatch.png */; };
 		3DE4DAD41476765101945408 /* libPods-frontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D43FF9D506E70904424FA7E9 /* libPods-frontend.a */; };
 /* End PBXBuildFile section */
 
@@ -22,13 +23,14 @@
 		0731D3B524204D62009CAE85 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Expo.plist; path = frontend/Supporting/Expo.plist; sourceTree = "<group>"; };
 		07C2E6E3243282B30028AF0A /* app.manifest */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = app.manifest; path = frontend/Supporting/app.manifest; sourceTree = "<group>"; };
 		07C2E6E4243282B30028AF0A /* app.bundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = app.bundle; path = frontend/Supporting/app.bundle; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* frontend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = frontend.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Get It Done Timer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Get It Done Timer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = frontend/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = frontend/AppDelegate.m; sourceTree = "<group>"; };
 		13B07FB21A68108700A75B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = frontend/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = frontend/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = frontend/main.m; sourceTree = "<group>"; };
+		19B563D12449A14A0003E2C0 /* stopwatch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = stopwatch.png; path = ../../../../../../Desktop/stopwatch.png; sourceTree = "<group>"; };
 		19F7194C243B09DE0042C9DE /* frontend.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = frontend.entitlements; path = frontend/frontend.entitlements; sourceTree = "<group>"; };
 		2D16E6891FA4F8E400B85C8A /* libReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B47C5AFCB8BDE514B7D1AC6 /* Pods-frontend.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-frontend.debug.xcconfig"; path = "Target Support Files/Pods-frontend/Pods-frontend.debug.xcconfig"; sourceTree = "<group>"; };
@@ -53,6 +55,7 @@
 		13B07FAE1A68108700A75B9A /* frontend */ = {
 			isa = PBXGroup;
 			children = (
+				19B563D12449A14A0003E2C0 /* stopwatch.png */,
 				19F7194C243B09DE0042C9DE /* frontend.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -112,7 +115,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* frontend.app */,
+				13B07F961A680F5B00A75B9A /* Get It Done Timer.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -137,7 +140,7 @@
 			);
 			name = frontend;
 			productName = "Hello World";
-			productReference = 13B07F961A680F5B00A75B9A /* frontend.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Get It Done Timer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -183,6 +186,7 @@
 				0731D3B824204D62009CAE85 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				19B563D22449A14A0003E2C0 /* stopwatch.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,18 +281,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = frontend/frontend.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = NFXR5LRHN6;
 				INFOPLIST_FILE = frontend/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.younggyolee.focustimer;
-				PRODUCT_NAME = frontend;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.younggyolee.get-it-done-timer";
+				PRODUCT_NAME = "Get It Done Timer";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -299,17 +304,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = frontend/frontend.entitlements;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = NFXR5LRHN6;
 				INFOPLIST_FILE = frontend/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.younggyolee.focustimer;
-				PRODUCT_NAME = frontend;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.younggyolee.get-it-done-timer";
+				PRODUCT_NAME = "Get It Done Timer";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;

@@ -88,9 +88,9 @@ export default function Timer({ route, navigation }) {
           const eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date')) || {};
           const todayEvents = eventsByDate[today] || [];
           eventId = uuidv4();
-          todayEvents.push(eventId);
+          // todayEvents.push(eventId);
           const data = {
-            [today]: todayEvents
+            [today]: [...todayEvents, eventId]
           };
           await AsyncStorage.mergeItem(
             'events_by_date',

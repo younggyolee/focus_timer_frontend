@@ -28,7 +28,6 @@ export default function StatsList({ navigation }) {
       let eventsByDate;
       try {
         eventsByDate = JSON.parse(await AsyncStorage.getItem('events_by_date'));
-        console.log('events_by_date', eventsByDate);
       } catch (err) {
         console.error('Error while getting eventsByDate from AsyncStorage\n', err);
       }
@@ -50,7 +49,6 @@ export default function StatsList({ navigation }) {
       let events;
       try {
         events = JSON.parse(await AsyncStorage.getItem('events'));
-        console.log('events', events);
       } catch (err) {
         console.error('Error while getting events\n', err);
       }
@@ -82,7 +80,6 @@ export default function StatsList({ navigation }) {
         return (b.duration - a.duration);
       });
       const maxDuration = durationByTagArr.length && durationByTagArr[0]['duration'] || 3600;
-      console.log('maxDuration', maxDuration);
       setEventsByTag(durationByTagArr);
       setEventsByTagMaxDuration(maxDuration);
     })();
@@ -154,7 +151,7 @@ export default function StatsList({ navigation }) {
               {moment(startDate).format('MMM DD, YYYY')}-{moment(endDate).format('MMM DD, YYYY')}
             </Text>
           </View>
-          <View style={styles.barsContainer}>
+          <View>
             {
               eventsByTag.map((event, index) => {
                 const barWidth = (event.duration / eventsByTagMaxDuration) * screenWidth * 0.8;
