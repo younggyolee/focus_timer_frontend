@@ -118,18 +118,19 @@ export default function Timer({ route, navigation }) {
           const data = {};
           for (tag of tags) {
             data[tag] = eventsByTag[tag] ?
-                [...eventsByTag[tag], eventId] : 
-                [eventId];
-            // data[tag].push(eventId);
+              [...eventsByTag[tag], eventId] : 
+              [eventId];
           }
-          await AsyncStorage.mergeItem(
-            'events_by_tag',
-            JSON.stringify(data)
-          );
+          if (Object.keys(data).length) {
+            await AsyncStorage.mergeItem(
+              'events_by_tag',
+              JSON.stringify(data)
+            );
+          }
         } catch (err) {
           console.log('Error while storing event id to events_by_tag\n', err);
         }
-
+k
         // create an event on calendar
         if (isCalendarPermitted && isCalendarEnabled && calendarId) {
           const eventId = await Calendar.createEventAsync(calendarSettings.calendar_id, {
@@ -186,7 +187,6 @@ export default function Timer({ route, navigation }) {
         Vibration.vibrate();
         try {
           (async() => {
-            // setSoundB = new Audio.Sound();
             await soundObject.loadAsync(require('../assets/sounds/alarm_bell.mp3'));      
             await soundObject.playAsync();
           })();
