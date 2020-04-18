@@ -130,7 +130,7 @@ export default function Timer({ route, navigation }) {
         } catch (err) {
           console.log('Error while storing event id to events_by_tag\n', err);
         }
-k
+
         // create an event on calendar
         if (isCalendarPermitted && isCalendarEnabled && calendarId) {
           const eventId = await Calendar.createEventAsync(calendarSettings.calendar_id, {
