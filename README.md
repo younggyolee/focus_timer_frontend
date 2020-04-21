@@ -5,7 +5,7 @@ I made this timer as there was no iOS app on the market that precisely satisfied
 ![](preview_1.gif)
 
 ## Download here
-<!-- App store link with App Store image -->
+<!-- App store link with App Store icon -->
 App Store link will be added here later.
 
 ## Stories
@@ -24,3 +24,16 @@ App Store link will be added here later.
 
 ### Technical stuffs
 
+### Challenges
+- React-native Libraries
+    - Installing `node-nlp-rn`
+    - library setup - need to configure iOS Swift files (not too crazy, but still taking time)
+    - errors in library (e.g. datetimepicker countdown mode)
+- Mobile Specific issues
+    - permissions issues (need to think of many cases)
+    - background & settimeout not working
+    - 'Hey Siri' - (wait for trigger word/ 1 min limit on iOS) - (Google Assistant?)
+- Build issues
+    - apple developer account, xcode, app store connect test flight crash, etc. + expo
+- etc
+    - AsyncStorage - only JSON format (need to be parsed)
