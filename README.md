@@ -1,7 +1,6 @@
-## Preview
+# Get-it-done Timer
 ![](preview_1.gif)
 
-# Get-it-done Timer
 ## Introduction
 I made this timer as there was no iOS timer app on the market that precisely satisfied my needs.
 
