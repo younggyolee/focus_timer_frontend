@@ -38,54 +38,9 @@ export default function Main({ navigation }) {
     })();
   }, []);
 
-  useEffect(() => {
-    const extractedTags = [];
-    for (word of title.split(' ')) {
-      if (word.includes('#')) {
-        extractedTags.push(word);
-      }
-    }
-    setTags(extractedTags);
-  }, [title]);
-
-  useEffect(() => {
-    if (status === STATUS_TYPES.STARTING_TIMER) {
-      PushNotificationIOS.checkPermissions(result => {
-        if (!result.alert || !result.sound) {
-          PushNotificationIOS.requestPermissions();
-        }
-      });
-      setStatus(STATUS_TYPES.WAITING);
-
-      navigation.navigate('Timer', {
-        title,
-        tags,
-        hours,
-        minutes,
-      });
-    }
-  }, [status]);
-
-  useEffect(() => {
-    if (status === STATUS_TYPES.COMMAND_PROCESSED) {
-      const hoursMessage = 
-        hours ? 
-        (hours > 1 ? `${hours} hours` : `${hours} hour`) :
-        '';
-      const minutesMessage =
-        minutes ?
-        (minutes > 1 ? `${minutes} minutes` : `${minutes} minute`) :
-        '';
-      const andMessage = hoursMessage && minutesMessage ? 'and' : '';
-      const message = `Starting ${title} for ${hoursMessage} ${andMessage} ${minutesMessage}`;
-      setStatus(STATUS_TYPES.STARTING_TIMER);
-      Tts.speak(message);
-    }
-  }, [status, hours, minutes, title]);
-
   // Trigger two changes on start-up,
-  // to deal with an issue presumably from SWIFT API
-  // where the first two changes don't trigger onChange
+  // to deal with an issue presumably from iOS Swift API,
+  // The issue is that the first two changes don't trigger onChange.
   useEffect(() => {
     setHours(0);
     setMinutes(0);
@@ -93,32 +48,6 @@ export default function Main({ navigation }) {
       setHours(1);
       setMinutes(0);
     });
-  }, []);
-
-  useEffect(() => {
-    Voice.onSpeechStart = onSpeechStart;
-    Voice.onSpeechRecognized = onSpeechRecognized;
-    Voice.onSpeechEnd = onSpeechEnd;
-    Voice.onSpeechError = onSpeechError;
-    Voice.onSpeechResults = onSpeechResults;
-    const locale = NativeModules.SettingsManager.settings.AppleLanguages
-    setLocale(locale[0]);
-
-    Tts.addEventListener('tts-start', (event) => {
-      console.log("start", event);
-    });
-    Tts.addEventListener('tts-finish', (event) => {
-      console.log("finish", event);
-    });
-    Tts.addEventListener('tts-cancel', (event) => {
-      console.log("cancel", event);
-    });
-    return function cleanup() {
-      Voice.removeAllListeners();
-      Tts.removeEventListener('tts-start');
-      Tts.removeEventListener('tts-finish');
-      Tts.removeEventListener('tts-cancel');
-    }
   }, []);
 
   useEffect(() => {
@@ -148,6 +77,77 @@ export default function Main({ navigation }) {
       }
     }
   }, [text, status]);
+
+  useEffect(() => {
+    if (status === STATUS_TYPES.COMMAND_PROCESSED) {
+      const hoursMessage = 
+        hours ? 
+        (hours > 1 ? `${hours} hours` : `${hours} hour`) :
+        '';
+      const minutesMessage =
+        minutes ?
+        (minutes > 1 ? `${minutes} minutes` : `${minutes} minute`) :
+        '';
+      const andMessage = hoursMessage && minutesMessage ? 'and' : '';
+      const message = `Starting ${title} for ${hoursMessage} ${andMessage} ${minutesMessage}`;
+      setStatus(STATUS_TYPES.STARTING_TIMER);
+      Tts.speak(message);
+    }
+  }, [status, hours, minutes, title]);
+
+  useEffect(() => {
+    if (status === STATUS_TYPES.STARTING_TIMER) {
+      PushNotificationIOS.checkPermissions(result => {
+        if (!result.alert || !result.sound) {
+          PushNotificationIOS.requestPermissions();
+        }
+      });
+      setStatus(STATUS_TYPES.WAITING);
+
+      navigation.navigate('Timer', {
+        title,
+        tags,
+        hours,
+        minutes,
+      });
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const extractedTags = [];
+    for (word of title.split(' ')) {
+      if (word.includes('#')) {
+        extractedTags.push(word);
+      }
+    }
+    setTags(extractedTags);
+  }, [title]);
+
+  useEffect(() => {
+    Voice.onSpeechStart = onSpeechStart;
+    Voice.onSpeechRecognized = onSpeechRecognized;
+    Voice.onSpeechEnd = onSpeechEnd;
+    Voice.onSpeechError = onSpeechError;
+    Voice.onSpeechResults = onSpeechResults;
+    const locale = NativeModules.SettingsManager.settings.AppleLanguages
+    setLocale(locale[0]);
+
+    Tts.addEventListener('tts-start', (event) => {
+      console.log("start", event);
+    });
+    Tts.addEventListener('tts-finish', (event) => {
+      console.log("finish", event);
+    });
+    Tts.addEventListener('tts-cancel', (event) => {
+      console.log("cancel", event);
+    });
+    return function cleanup() {
+      Voice.removeAllListeners();
+      Tts.removeEventListener('tts-start');
+      Tts.removeEventListener('tts-finish');
+      Tts.removeEventListener('tts-cancel');
+    }
+  }, []);
 
   function onSpeechStart(e) {
     console.log('onSpeechStart', e);

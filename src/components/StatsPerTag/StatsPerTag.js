@@ -29,15 +29,12 @@ export default function StatsPerTag({ route, navigation }) {
         eventsByTag = JSON.parse(await AsyncStorage.getItem('events_by_tag'));
         events = JSON.parse(await AsyncStorage.getItem('events'));
       } catch (err) {
-        console.error(err);
+        console.log('Error while fetching events_by_tag\n', err);
       }
-      // console.log('eventsByTag', eventsByTag);
-      // console.log('events', events);
       const eventIds = eventsByTag[tag];
       const tagDurationByDate = {};
       for (let eventId of eventIds) {
         const event = events[eventId];
-        // console.log('event', event);
         const eventDate = getIsoDate(new Date(event.start_date).valueOf());
         const eventDuration = (new Date(event.end_date) - new Date(event.start_date)) / (1000 * 3600);
         if (tagDurationByDate[eventDate]) {

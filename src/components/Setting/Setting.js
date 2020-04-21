@@ -18,11 +18,10 @@ export default function Setting({ navigation }) {
   }, []);
 
   async function toggleCalendarSwitch() {
-    const toggled = !isCalendarEnabled;
+    const toggledState = !isCalendarEnabled;
 
-    if (toggled) {
-      let calendar_settings = await AsyncStorage.getItem('calendar_settings');
-      calendar_settings = JSON.parse(calendar_settings);
+    if (toggledState) {
+      const calendar_settings = JSON.parse(await AsyncStorage.getItem('calendar_settings'));
       calendarId = calendar_settings.calendar_id;
 
       const calendarPermission = await Calendar.getCalendarPermissionsAsync()
@@ -47,7 +46,7 @@ export default function Setting({ navigation }) {
         }
       }
 
-      // check if calendar id exists in asyncstorage & it really exists in the calendar too
+      // check if calendar id exists in asyncstorage & if it really exists in the calendar
       const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
       let calendarExists;
       calendars.forEach(calendar => {
@@ -65,10 +64,10 @@ export default function Setting({ navigation }) {
     (async() => {
       await AsyncStorage.mergeItem(
         'calendar_settings',
-        JSON.stringify({ is_calendar_enabled: toggled })
+        JSON.stringify({ is_calendar_enabled: toggledState })
       );
     })();
-    setIsCalendarEnabled(toggled);
+    setIsCalendarEnabled(toggledState);
   }
 
   return(

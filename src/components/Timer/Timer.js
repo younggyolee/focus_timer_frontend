@@ -45,8 +45,8 @@ export default function Timer({ route, navigation }) {
         calendarSettings = JSON.parse(calendarSettings);
         calendarId = calendarSettings.calendar_id;
         isCalendarEnabled = calendarSettings.is_calendar_enabled;
-        
-        //check if calendar exists, and re-create one if it doesn't in calendar
+
+        //check if calendar exists, and re-create one if the calendar doesn't exist
         const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
         let calendarExists;
         calendars.forEach(calendar => {
@@ -150,7 +150,7 @@ export default function Timer({ route, navigation }) {
           });
         }
 
-        // update [end_date] of event in storage
+        // update [end_date] of event in device storage
         const event = events[storageEventId];
         if (event) {
           event.end_date = new Date().toISOString();
@@ -178,7 +178,7 @@ export default function Timer({ route, navigation }) {
           newSecondsLeft = (endTime - new Date().valueOf()) / 1000;
           newSecondsLeft >= 0 ? setSecondsLeft(newSecondsLeft) : setSecondsLeft(0);
         }, 1000);
-        return () => {
+        return function cleanup() {
           clearTimeout(timer);
         }
       }
@@ -209,7 +209,7 @@ export default function Timer({ route, navigation }) {
     navigation.navigate("Main");
   }
 
-  return(
+  return (
     <SafeAreaView style={
       status === STATUS_TYPES.ACTIVE ?
         styles.safeAreaViewContainerActive:
