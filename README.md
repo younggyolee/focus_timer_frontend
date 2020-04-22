@@ -31,10 +31,10 @@ I made this timer as there was no iOS timer app on the market that precisely sat
 
 ### Steps
 - Clone this repo
-- `npm install`
+- `$ npm install`
 - Install Cocoa Pods using `$ sudo gem install cocoapods` (See http://cocoapods.org)
-- `cd ios && pod install`
-- `npm run ios` to run iOS simulator.
+- `$ cd ios && pod install`
+- `$ npm run ios` to run iOS simulator.
 
 ## Challenges
 - React-native Libraries
