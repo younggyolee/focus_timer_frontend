@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, SafeAreaView } from 'react-native';
+import { ScrollView, View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
 import styles from './CopyrightNotice.style.ios.js';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCog } from '@fortawesome/free-solid-svg-icons';
 
 export default function CopyrightNotice({ navigation }) {
   return(
     <SafeAreaView>
       <ScrollView style={styles.container}>
-        <Text style={styles.headerTitleText}>Copyright Notices</Text>
+        <View style={styles.headerContainer}>
+          <View style={styles.headerSettingButtonContainer}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Setting')}
+            >
+              <FontAwesomeIcon icon={ faCog } size={ 40 }/>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.headerTitleText}>Copyright Notices</Text>
+        </View>
         <View stlye={styles.eachCopyrightContainer}>
           <Text style={styles.copyrightTitleText}>node-nlp-rn</Text>
           <Text style={styles.copyrightContentText}>
@@ -493,7 +504,6 @@ export default function CopyrightNotice({ navigation }) {
             LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
             OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
             SOFTWARE.
-
           </Text>
         </View>
       </ScrollView>
