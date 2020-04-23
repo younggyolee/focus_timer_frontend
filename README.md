@@ -15,6 +15,7 @@ I made this timer as there was no iOS timer app on the market that precisely sat
 - can **track** how many hours I spent per category per day,
 - can encourage me to **focus**
 - can automatically sync with **Apple Calendar**
+- can start timer using voice recognition
 
 ## Download here
 <!-- App store link with App Store icon -->
