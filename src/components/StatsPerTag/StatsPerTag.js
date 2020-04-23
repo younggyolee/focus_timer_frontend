@@ -93,7 +93,7 @@ export default function StatsPerTag({ route, navigation }) {
 
   return (
     <SafeAreaView>
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={() => navigation.navigate('StatsList')}
@@ -123,7 +123,7 @@ export default function StatsPerTag({ route, navigation }) {
             </ScrollView>
           )}
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

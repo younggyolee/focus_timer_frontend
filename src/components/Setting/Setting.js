@@ -96,6 +96,11 @@ export default function Setting({ navigation }) {
               />
             </View>
           </View>
+          <View>
+            <TouchableOpacity>
+              <Text>Copyright Statements</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </SafeAreaView>
