@@ -18,15 +18,18 @@ export default StyleSheet.create({
     borderTopWidth: 3,
     marginTop: 20
   },
-  calendarSettingContainer: {
+  eachSettingContainer: {
     paddingTop: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'grey',
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
-  calendarSettingTextContainer: {
+  eachSettingTextContainer: {
     justifyContent: 'center'
   },
-  calendarSettingText: {
+  eachSettingText: {
     fontSize: 25
-  }
+  },
 });
