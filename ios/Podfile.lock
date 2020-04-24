@@ -17,7 +17,7 @@ PODS:
   - EXFileSystem (8.1.0):
     - UMCore
     - UMFileSystemInterface
-  - EXFont (8.1.0):
+  - EXFont (8.1.1):
     - UMCore
     - UMFontInterface
   - EXImageLoader (1.0.1):
@@ -41,7 +41,7 @@ PODS:
   - EXUpdates (0.1.1):
     - React
     - UMCore
-  - EXWebBrowser (8.1.0):
+  - EXWebBrowser (8.1.1):
     - UMCore
   - FBLazyVector (0.61.5)
   - FBReactNativeSpec (0.61.5):
@@ -61,6 +61,8 @@ PODS:
     - DoubleConversion
     - glog
   - glog (0.3.5)
+  - Permission-Microphone (2.1.0):
+    - RNPermissions
   - Permission-SpeechRecognition (2.1.0):
     - RNPermissions
   - RCTRequired (0.61.5)
@@ -327,6 +329,7 @@ DEPENDENCIES:
   - FBReactNativeSpec (from `../node_modules/react-native/Libraries/FBReactNativeSpec`)
   - Folly (from `../node_modules/react-native/third-party-podspecs/Folly.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
+  - Permission-Microphone (from `../node_modules/react-native-permissions/ios/Microphone.podspec`)
   - Permission-SpeechRecognition (from `../node_modules/react-native-permissions/ios/SpeechRecognition.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -422,6 +425,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/Folly.podspec"
   glog:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
+  Permission-Microphone:
+    :path: "../node_modules/react-native-permissions/ios/Microphone.podspec"
   Permission-SpeechRecognition:
     :path: "../node_modules/react-native-permissions/ios/SpeechRecognition.podspec"
   RCTRequired:
@@ -526,7 +531,7 @@ SPEC CHECKSUMS:
   EXConstants: 9f18e9ef229706394f41735d9c7f309d479b36c0
   EXErrorRecovery: 88541714d9bbf8a823f4ee0b7078a92d3e0e42d2
   EXFileSystem: b82693d78de152efe10a77d4aac781f782e10916
-  EXFont: 00c6f9daffd8f4f7775d4191a6464bcd9021044a
+  EXFont: af4c3281cac0bf6ccd8b8a534e9bce6437cc2e17
   EXImageLoader: 5c9d1bf408443ac4d4f44463eaf3b0d03bc70425
   EXKeepAwake: 4b53df0b4e87aa9f38bf57461e07fc167716a760
   EXLinearGradient: 8189387e3a65c2a9ba5507432e3a099ea8f7ea86
@@ -534,11 +539,12 @@ SPEC CHECKSUMS:
   EXPermissions: d2cafee9c72578ecc9ca121481e6c4a04a798861
   EXSQLite: 15268ec49f859e4594fe5b0a1c7a47913da0b67e
   EXUpdates: d322154583386a237818dea1bd001d63e67343f6
-  EXWebBrowser: 9e11185de5c41c8d67a2daa7f2d42ab50deccc84
+  EXWebBrowser: d720fa61da68fbd174f3655f1e9a848cd08fffc3
   FBLazyVector: aaeaf388755e4f29cd74acbc9e3b8da6d807c37f
   FBReactNativeSpec: 118d0d177724c2d67f08a59136eb29ef5943ec75
   Folly: 30e7936e1c45c08d884aa59369ed951a8e68cf51
   glog: 1f3da668190260b06b429bb211bfbee5cd790c28
+  Permission-Microphone: e7973f79ad5013b5110dc4b243507b76af894c91
   Permission-SpeechRecognition: 33f14a786963329696630c280ed7a9deac297f9e
   RCTRequired: b153add4da6e7dbc44aebf93f3cf4fcae392ddf1
   RCTTypeSafety: 9aa1b91d7f9310fc6eadc3cf95126ffe818af320
@@ -587,6 +593,6 @@ SPEC CHECKSUMS:
   UMTaskManagerInterface: 4e6c4c34a89512e2225d336154df1cb689226a29
   Yoga: f2a7cd4280bfe2cca5a7aed98ba0eb3d1310f18b
 
-PODFILE CHECKSUM: f0b1f8ae9f2c24352dc643a81342181c8a95dcbe
+PODFILE CHECKSUM: b5a692cc427bf2aebfa9ea86a9418dffac688af1
 
 COCOAPODS: 1.9.1

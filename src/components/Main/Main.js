@@ -172,20 +172,24 @@ export default function Main({ navigation }) {
   }
 
   async function onRecordingIconTouch() {
-    const permission = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
-    switch (permission) {
+    const speechRecognitionPermission = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
+    switch (speechRecognitionPermission) {
       case RESULTS.UNAVAILABLE:
         console.log('This feature is not available on this device');
         return;
       case RESULTS.DENIED:
       case RESULTS.GRANTED:
         setStatus(STATUS_TYPES.DICTATING);
-        await Voice.start(locale);
-        return;
+        try {
+          await Voice.start(locale);
+        } catch (err) {
+          console.log('Error occured while starting voice recognition.\n', err);
+        }
+        break;
       case RESULTS.BLOCKED:
         Alert.alert(
           'Speech Recognition Access Required',
-          'Please turn on Access for Speech Recognition in iPhone "Settings" to use the calendar syncing feature',
+          'To use voice-typing, please allow us to access Speech Recognition in "Settings" of this device.',
           [
             {text: 'Cancel', style: 'cancel'},
             {text: 'Settings', onPress: () => Linking.openSettings()},
@@ -194,12 +198,37 @@ export default function Main({ navigation }) {
         );
         return;
     }
+
+    const microphonePermission = await check(PERMISSIONS.IOS.MICROPHONE);
+    switch (microphonePermission) {
+      case RESULTS.UNAVAILABLE:
+        console.log('This feature is not available on this device');
+        return;
+      case RESULTS.DENIED:
+      case RESULTS.GRANTED:
+        return;
+      case RESULTS.BLOCKED:
+        Alert.alert(
+          'Microphone Access Required',
+          'To use voice-typing, please allow us to access Microphone in "Settings" of this device.',
+          [
+            {text: 'Cancel', style: 'cancel'},
+            {text: 'Settings', onPress: () => Linking.openSettings()},
+          ],
+          { cancelable: false }
+        );
+        return;
+    }    
   }
 
   async function onCancelRecordingIconTouch() {
     clearTimeout(queuedTimer);
     setStatus(STATUS_TYPES.WAITING);
-    await Voice.stop();
+    try {
+      await Voice.stop();
+    } catch (err) {
+      console.log('Error occured while stopping voice recognition.\n', err);
+    }
   }
 
   return(

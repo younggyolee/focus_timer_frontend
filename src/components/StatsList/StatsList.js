@@ -147,13 +147,7 @@ export default function StatsList({ navigation }) {
               eventsByTag.map((event, index) => {
                 const barWidth = (event.duration / eventsByTagMaxDuration) * screenWidth * 0.8;
                 return (
-                  <TouchableOpacity
-                    style={styles.barContainer}
-                    onPress={() => 
-                      navigation.navigate('StatsPerTag', {
-                        tag: event.tag
-                      })
-                    }
+                  <View
                     key={index}
                   >
                     <Animated.View
@@ -175,7 +169,7 @@ export default function StatsList({ navigation }) {
                         trim: false
                       })}
                     </Text>
-                  </TouchableOpacity>
+                  </View>
                 );
               })
             }

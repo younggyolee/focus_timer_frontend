@@ -35,7 +35,7 @@ export default function Setting({ navigation }) {
           // calendar permission should be configured manually
           Alert.alert(
             'Calendar Access Required',
-            'Please turn on Calendar Access in iPhone "Settings" to use the calendar syncing feature',
+            'To use the calendar syncing, please allow us to access Calendars in "Settings" of this device.',
             [
               {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
               {text: 'Settings', onPress: () => Linking.openSettings()},
@@ -83,9 +83,9 @@ export default function Setting({ navigation }) {
           <Text style={styles.settingsHeaderText}>Settings</Text>
         </View>
         <View style={styles.contentContainer}>
-          <View style={styles.calendarSettingContainer}>
-            <View style={styles.calendarSettingTextContainer}>
-              <Text style={styles.calendarSettingText}>
+          <View style={styles.eachSettingContainer}>
+            <View style={styles.eachSettingTextContainer}>
+              <Text style={styles.eachSettingText}>
                 Add events to calendar
               </Text>
             </View>
@@ -96,9 +96,11 @@ export default function Setting({ navigation }) {
               />
             </View>
           </View>
-          <View>
-            <TouchableOpacity>
-              <Text>Copyright Statements</Text>
+          <View style={styles.eachSettingContainer}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('CopyrightNotice')}
+            >
+              <Text style={styles.eachSettingText}>Copyright Notice</Text>
             </TouchableOpacity>
           </View>
         </View>
