@@ -180,12 +180,16 @@ export default function Main({ navigation }) {
       case RESULTS.DENIED:
       case RESULTS.GRANTED:
         setStatus(STATUS_TYPES.DICTATING);
-        await Voice.start(locale);
+        try {
+          await Voice.start(locale);
+        } catch (err) {
+          console.log('Error occured while starting voice recognition.\n', err);
+        }
         return;
       case RESULTS.BLOCKED:
         Alert.alert(
           'Speech Recognition Access Required',
-          'Please turn on Access for Speech Recognition in iPhone "Settings" to use the calendar syncing feature',
+          'To use speech recognition, please allow us to access Speech Recognition in "Settings" of this device.',
           [
             {text: 'Cancel', style: 'cancel'},
             {text: 'Settings', onPress: () => Linking.openSettings()},
@@ -199,7 +203,11 @@ export default function Main({ navigation }) {
   async function onCancelRecordingIconTouch() {
     clearTimeout(queuedTimer);
     setStatus(STATUS_TYPES.WAITING);
-    await Voice.stop();
+    try {
+      await Voice.stop();
+    } catch (err) {
+      console.log('Error occured while stopping voice recognition.\n', err);
+    }
   }
 
   return(

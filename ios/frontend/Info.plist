@@ -42,7 +42,7 @@
 		</dict>
 	</dict>
 	<key>NSCalendarsUsageDescription</key>
-	<string>Allow Get It Done Timer to access your calendar</string>
+	<string>This allows us to add an event to your default calendar, in sync with each timer start or resumption.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow Get It Done Timer to use the camera</string>
 	<key>NSContactsUsageDescription</key>
@@ -64,7 +64,7 @@
 	<key>NSRemindersUsageDescription</key>
 	<string>Allow Get It Done Timer to access your reminders</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Allow Get It Done Timer to access your recognition</string>
+	<string>This allows us to dictate the title and duration that you want for a timer event, only when this microphone button is pressed.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

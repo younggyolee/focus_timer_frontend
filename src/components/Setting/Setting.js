@@ -35,7 +35,7 @@ export default function Setting({ navigation }) {
           // calendar permission should be configured manually
           Alert.alert(
             'Calendar Access Required',
-            'Please turn on Calendar Access in iPhone "Settings" to use the calendar syncing feature',
+            'To use the calendar syncing, please allow us to access Calendars in "Settings" of this device.',
             [
               {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
               {text: 'Settings', onPress: () => Linking.openSettings()},
