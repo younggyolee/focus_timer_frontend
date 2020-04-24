@@ -172,8 +172,8 @@ export default function Main({ navigation }) {
   }
 
   async function onRecordingIconTouch() {
-    const permission = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
-    switch (permission) {
+    const speechRecognitionPermission = await check(PERMISSIONS.IOS.SPEECH_RECOGNITION);
+    switch (speechRecognitionPermission) {
       case RESULTS.UNAVAILABLE:
         console.log('This feature is not available on this device');
         return;
@@ -185,11 +185,11 @@ export default function Main({ navigation }) {
         } catch (err) {
           console.log('Error occured while starting voice recognition.\n', err);
         }
-        return;
+        break;
       case RESULTS.BLOCKED:
         Alert.alert(
           'Speech Recognition Access Required',
-          'To use speech recognition, please allow us to access Speech Recognition in "Settings" of this device.',
+          'To use voice-typing, please allow us to access Speech Recognition in "Settings" of this device.',
           [
             {text: 'Cancel', style: 'cancel'},
             {text: 'Settings', onPress: () => Linking.openSettings()},
@@ -198,6 +198,27 @@ export default function Main({ navigation }) {
         );
         return;
     }
+
+    const microphonePermission = await check(PERMISSIONS.IOS.MICROPHONE);
+    switch (microphonePermission) {
+      case RESULTS.UNAVAILABLE:
+        console.log('This feature is not available on this device');
+        return;
+      case RESULTS.DENIED:
+      case RESULTS.GRANTED:
+        return;
+      case RESULTS.BLOCKED:
+        Alert.alert(
+          'Microphone Access Required',
+          'To use voice-typing, please allow us to access Microphone in "Settings" of this device.',
+          [
+            {text: 'Cancel', style: 'cancel'},
+            {text: 'Settings', onPress: () => Linking.openSettings()},
+          ],
+          { cancelable: false }
+        );
+        return;
+    }    
   }
 
   async function onCancelRecordingIconTouch() {

@@ -8,10 +8,6 @@
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIconFiles</key>
-	<array>
-		<string>stopwatch.png</string>
-	</array>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -54,9 +50,9 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allow Get It Done Timer to use your location</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Allow Get It Done Timer to access your microphone</string>
+	<string>This allows us to use your microphone for dictation, only when this microphone button is pressed.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Allow Get It Done Timer to access your device&apos;s accelerometer</string>
+	<string>Allow Get It Done Timer to access your device's accelerometer</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Give Get It Done Timer permission to save photos</string>
 	<key>NSPhotoLibraryUsageDescription</key>
