@@ -70,7 +70,7 @@ export default function Timer({ route, navigation }) {
         PushNotificationIOS.scheduleLocalNotification({
           fireDate: new Date(newEndTime).valueOf(),
           alertTitle: `${title} has completed!`,
-          alertBody: new Date(newEndTime).toString(),
+          alertBody: `Duration: ${moment.duration(secondsTotal, "seconds").format("hh:mm:ss", { trim: false })}`,
           isSilent: false,
           applicationIconBadgeNumber: 0
         });

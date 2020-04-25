@@ -18,10 +18,14 @@ I made this timer as there was no iOS timer app on the market that precisely sat
 - can start timer using voice recognition
 
 ## Download here
+<<<<<<< HEAD
 <!-- App store link with App Store icon -->
 - The App is currently under review in Apple App Store.
 - I will add a App Store link, once the app passes the review process.
 - Closed-beta testing is available for those with iPhone + `App Store Connect` account (i.e. Apple Developer membership holders). Please contact me via younglee.work@gmail.com so that I can add you as a tester.
+=======
+[![](./download_on_app_store_us.png)](https://apps.apple.com/app/get-it-done-timer-focus/id1508493617?l=en)
+>>>>>>> dev
 
 ## Setup this project on computer
 ### Requirements
