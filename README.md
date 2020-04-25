@@ -18,7 +18,9 @@ I made this timer as there was no iOS timer app on the market that precisely sat
 - can start timer using voice recognition
 
 ## Download here
-[![](./download_on_app_store_us.png)](https://apps.apple.com/app/get-it-done-timer-focus/id1508493617?l=en)
+<a href="https://apps.apple.com/app/get-it-done-timer-focus/id1508493617?l=en">
+    <img src="./download_on_app_store_us.png" width="200" height="66">
+</a>
 
 ## Setup this project on computer
 ### Requirements
