@@ -191,13 +191,11 @@ export default function Timer({ route, navigation }) {
             Audio.setAudioModeAsync({
               playsInSilentModeIOS: soundSettings.is_playing_in_silent
             });
-            const {
-              sound: soundObject
-            } = await Audio.Sound.createAsync(
+            const { sound } = await Audio.Sound.createAsync(
               require('../assets/sounds/alarm_bell.mp3'),
               { shouldPlay: true }
             );
-            setSoundObject(soundObject);
+            setSoundObject(sound);
           })();
         } catch (err) {
           console.log('Error occured while trying to play alarm_bell \n', err);
