@@ -27,10 +27,10 @@ export default function Timer({ route, navigation }) {
   const [isKeptAwake, setIsKeptAwake] = useState(false);
   const [calendarEventId, setCalendarEventId] = useState('');
   const [storageEventId, setStorageEventId] = useState('');
-  const [soundObject, setSoundObject] = useState(new Audio.Sound());
+  const [soundObject, setSoundObject] = useState({});
 
   useEffect(() => {
-    (async function() {
+    (async function() { 
       PushNotificationIOS.cancelAllLocalNotifications();
 
       const calendarPermission = await Calendar.getCalendarPermissionsAsync()
@@ -187,8 +187,17 @@ export default function Timer({ route, navigation }) {
         Vibration.vibrate();
         try {
           (async() => {
-            await soundObject.loadAsync(require('../assets/sounds/alarm_bell.mp3'));      
-            await soundObject.playAsync();
+            const soundSettings = JSON.parse(await AsyncStorage.getItem('sound_settings'));
+            Audio.setAudioModeAsync({
+              playsInSilentModeIOS: soundSettings.is_playing_in_silent
+            });
+            const {
+              sound: soundObject
+            } = await Audio.Sound.createAsync(
+              require('../assets/sounds/alarm_bell.mp3'),
+              { shouldPlay: true }
+            );
+            setSoundObject(soundObject);
           })();
         } catch (err) {
           console.log('Error occured while trying to play alarm_bell \n', err);
@@ -199,13 +208,14 @@ export default function Timer({ route, navigation }) {
   }, [secondsLeft, endTime, status]);
 
   async function onStopIconClick() {
-    deactivateKeepAwake();
     try {
-      await soundObject.stopAsync();
-      await soundObject.unloadAsync();
+      if (soundObject.unloadAsync) {
+        await soundObject.unloadAsync();
+      }
     } catch (err) {
       console.log('Error while stopping soundObject\n', err);
     }
+    deactivateKeepAwake();
     navigation.navigate("Main");
   }
 
@@ -268,7 +278,7 @@ export default function Timer({ route, navigation }) {
           {
             ((status === STATUS_TYPES.PAUSED) || (status === STATUS_TYPES.COMPLETED)) &&
             <TouchableOpacity
-              onPress={onStopIconClick}
+              onPress={() => onStopIconClick()}
             >
               <FontAwesomeIcon icon={ faStopCircle } size={ 80 } />
             </TouchableOpacity>

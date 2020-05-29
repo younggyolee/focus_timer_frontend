@@ -9,11 +9,15 @@ import { faHome } from '@fortawesome/free-solid-svg-icons';
 
 export default function Setting({ navigation }) {
   const [isCalendarEnabled, setIsCalendarEnabled] = useState(false);
+  const [isPlayingInSilent, setIsPlayingInSilent] = useState(false);
 
   useEffect(() => {
     (async() => {
       const calendarSettings = JSON.parse(await AsyncStorage.getItem('calendar_settings'));
       setIsCalendarEnabled(calendarSettings.is_calendar_enabled);
+
+      const soundSettings = JSON.parse(await AsyncStorage.getItem('sound_settings'));
+      setIsPlayingInSilent(soundSettings.is_playing_in_silent);
     })();
   }, []);
 
@@ -70,6 +74,17 @@ export default function Setting({ navigation }) {
     setIsCalendarEnabled(toggledState);
   }
 
+  async function toggleSilentSwitch() {
+    const toggledState = !isPlayingInSilent;
+    (async() => {
+      await AsyncStorage.mergeItem(
+        'sound_settings',
+        JSON.stringify({ is_playing_in_silent: toggledState })
+      );
+    })();
+    setIsPlayingInSilent(toggledState);
+  }
+
   return(
     <SafeAreaView>
       <View style={styles.container}>
@@ -93,6 +108,19 @@ export default function Setting({ navigation }) {
               <Switch
                 value={isCalendarEnabled}
                 onValueChange={toggleCalendarSwitch}
+              />
+            </View>
+          </View>
+          <View style={styles.eachSettingContainer}>
+            <View style={styles.eachSettingTextContainer}>
+              <Text style={styles.eachSettingText}>
+                Play alarm in silent
+              </Text>
+            </View>
+            <View>
+              <Switch
+                value={isPlayingInSilent}
+                onValueChange={toggleSilentSwitch}
               />
             </View>
           </View>

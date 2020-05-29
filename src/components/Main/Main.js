@@ -32,6 +32,9 @@ export default function Main({ navigation }) {
           is_calendar_enabled: false,
           permission_requested: false
         }));
+        AsyncStorage.setItem('sound_settings', JSON.stringify({
+          is_playing_in_silent: false
+        }));
         await AsyncStorage.setItem('has_launched', JSON.stringify(true));
         await AsyncStorage.setItem('events_by_date', JSON.stringify({}));
       }
