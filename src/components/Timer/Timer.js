@@ -39,7 +39,7 @@ export default function Timer({ route, navigation }) {
       let calendarSettings;
       let calendarId;
       let events = JSON.parse(await AsyncStorage.getItem('events'));
-      
+
       if (isCalendarPermitted) {
         calendarSettings = await AsyncStorage.getItem('calendar_settings');
         calendarSettings = JSON.parse(calendarSettings);
@@ -69,8 +69,8 @@ export default function Timer({ route, navigation }) {
 
         PushNotificationIOS.scheduleLocalNotification({
           fireDate: new Date(newEndTime).valueOf(),
-          alertTitle: `${title} has completed!`,
-          alertBody: `Duration: ${moment.duration(secondsTotal, "seconds").format("hh:mm:ss", { trim: false })}`,
+          alertTitle: `${title || 'Your timer'} has completed!`,
+          // alertBody: `Duration: ${moment.duration(secondsTotal, "seconds").format("hh:mm:ss", { trim: false })}`,
           isSilent: false,
           applicationIconBadgeNumber: 0
         });
@@ -172,7 +172,10 @@ export default function Timer({ route, navigation }) {
   // Timer core logic, 
   // which updates timer every second
   useEffect(() => {
-    if (endTime && status === STATUS_TYPES.ACTIVE) {
+    if (
+      endTime
+      && status === STATUS_TYPES.ACTIVE
+    ) {
       if (secondsLeft > 0) {
         const timer = setTimeout(() => {
           newSecondsLeft = (endTime - new Date().valueOf()) / 1000;
@@ -183,22 +186,50 @@ export default function Timer({ route, navigation }) {
         }
       }
 
-      if (secondsLeft == 0 && status === STATUS_TYPES.ACTIVE) {
-        Vibration.vibrate();
-        try {
-          (async() => {
-            const soundSettings = JSON.parse(await AsyncStorage.getItem('sound_settings'));
-            Audio.setAudioModeAsync({
-              playsInSilentModeIOS: soundSettings.is_playing_in_silent
-            });
-            const { sound } = await Audio.Sound.createAsync(
-              require('../assets/sounds/alarm_bell.mp3'),
-              { shouldPlay: true }
-            );
-            setSoundObject(sound);
-          })();
-        } catch (err) {
-          console.log('Error occured while trying to play alarm_bell \n', err);
+      async function playBellSound() {
+        const soundSettings = JSON.parse(await AsyncStorage.getItem('sound_settings'));
+        Audio.setAudioModeAsync({
+          playsInSilentModeIOS: soundSettings.is_playing_in_silent
+        });
+        const { sound } = await Audio.Sound.createAsync(
+          require('../assets/sounds/alarm_bell.mp3'),
+          { shouldPlay: true }
+        );
+        setSoundObject(sound);
+      }
+
+      if (
+        secondsLeft === 0
+        && status === STATUS_TYPES.ACTIVE
+      ) {
+        
+        if (new Date().valueOf() - endTime < 5000) {
+          const ONE_SECOND_IN_MS = 1000;
+          const PATTERN = [
+            0.6 * ONE_SECOND_IN_MS,
+            0.6 * ONE_SECOND_IN_MS,
+            0.6 * ONE_SECOND_IN_MS,
+            1.5 * ONE_SECOND_IN_MS,
+          ];
+          Vibration.vibrate(PATTERN);
+          setTimeout(() => {
+            try {
+              Vibration.cancel();
+              if (soundObject.unloadAsync) {
+                (async() => {
+                  await soundObject.unloadAsync();
+                })();
+              }
+            } catch (err) {
+              console.log('Error while trying to stop vibration\n', err);
+            }
+          }, 10000);
+
+          try {
+            playBellSound();
+          } catch (err) {
+            console.log('Error occured while trying to play alarm_bell \n', err);
+          }
         }
         setStatus(STATUS_TYPES.COMPLETED);
       }
@@ -210,6 +241,7 @@ export default function Timer({ route, navigation }) {
       if (soundObject.unloadAsync) {
         await soundObject.unloadAsync();
       }
+      Vibration.cancel();
     } catch (err) {
       console.log('Error while stopping soundObject\n', err);
     }
@@ -254,13 +286,13 @@ export default function Timer({ route, navigation }) {
           <Text style={styles.timeLeftText}>
             {moment.duration(secondsLeft, "seconds").format("hh:mm:ss", { trim: false })}
           </Text>
-          <Text style={styles.endTimeText}>
+          {/* <Text style={styles.endTimeText}>
             <FontAwesomeIcon
               icon={ faBell }
               style={styles.endTimeIcon}
             />
             {moment(new Date(endTime).toISOString()).format("A hh:mm")}
-          </Text>
+          </Text> */}
         </View>
         <View
           style={styles.activeButtonContainer}
