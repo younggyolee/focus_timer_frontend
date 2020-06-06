@@ -211,7 +211,7 @@ export default function Timer({ route, navigation }) {
             0.6 * ONE_SECOND_IN_MS,
             1.5 * ONE_SECOND_IN_MS,
           ];
-          Vibration.vibrate(PATTERN);
+          Vibration.vibrate(PATTERN, true);
           setTimeout(() => {
             try {
               Vibration.cancel();
