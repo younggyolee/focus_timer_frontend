@@ -1,6 +1,9 @@
 # Get-it-done Timer
 ![](preview_1.gif)
 
+## Watch the demo :tv: in YouTube (in Korean) :arrow_down: :arrow_down:
+[![Watch youtube video](./screenshot_youtube.png)](https://youtu.be/M2C6AAqfzbo)
+
 ## Introduction
 I made this timer as there was no iOS timer app on the market that precisely satisfied my needs.
 
