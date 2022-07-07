@@ -23,7 +23,7 @@
     "expo-calendar": "^8.1.0",
     "expo-keep-awake": "^8.1.0",
     "expo-updates": "~0.1.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "moment-duration-format": "^2.3.2",
     "node-nlp-rn": "^3.5.2",
     "react": "~16.9.0",
